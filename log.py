@@ -1,0 +1,109 @@
+# pylint: disable=C0103, too-few-public-methods, locally-disabled, no-self-use, unused-argument
+"""
+Very simple logging. The log is held in a list in memory and only saved on calling Log.write()
+
+Supports appending to existing log, or overwriting.
+
+Example:
+    >>> L = Log('c:/temp/log.log')
+    >>> L.log('my message', EnumLogStatus.INFO)
+    >>> L._write()
+"""
+
+from os import path as _path
+from enum import Enum as _Enum
+
+import fuckit as _fuckit
+
+from funclite import iolib as _iolib
+import funclite.stringslib as _stringslib
+
+class EnumLogStatus(_Enum):
+    """LogStatus"""
+    CRITICAL = 1
+    WARNING = 2
+    INFO = 3
+
+class Log:
+    """
+    In memory logfile, until it is written
+
+    Args:
+        logfile (str): log file path
+        overwrite (bool): Append or overwrite to logfile
+
+    Methods:
+        log: add an log record to the in-memory log
+        clear: clear the in-memory log
+        write: write the log out to path defined by logfile
+
+    Examples:
+        >>> L = Log('c:/temp/log.log')
+        >>> L.log('my message', EnumLogStatus.INFO)
+        >>> L._write()
+    """
+    _COL_CNT = 3
+
+    def __init__(self, logfile: str, overwrite: bool = True):
+        self.logfile = _path.normpath(logfile)
+        self._existed = False
+        if _iolib.file_exists(self.logfile):
+            self._existed = True
+        self._overwrite = overwrite or not self._existed
+        self._log = []
+        self._read()
+
+
+    def log(self, msg: str, status=EnumLogStatus.INFO) -> None:
+        """
+        Log a message to an in memory list.
+
+        Args:
+            msg (str): The message to log
+            status (EnumLogStatus): The status level of the message
+
+        Returns: None
+        """
+        msg = msg.replace(',', ';')
+        # don't want to bugger up writing invalid chars to the line, otherwise reading
+        # the log back in will fail
+        include = ';', '.', '<', '>', '(', ')', '-', '+', '@', '#', ':', '~', '{', '}', '[', ']', '!', '£', '$', '%', '&', '*', '=', '_', '?', '/', '|', '\\'
+        msg = _stringslib.filter_alphanumeric1(msg, strict=True, allow_cr=False, allow_lf=False, include=include)
+        row = [status.name, _stringslib.pretty_date_now(with_time=True), msg]
+        assert len(row) == Log._COL_CNT, 'Bad log row count, or _COL_CNT incorrect'
+        self._log.append(row)
+
+
+    def clear(self) -> None:
+        """
+        Clear all in-memory log messages
+
+        Returns: None
+        """
+        self._log = []
+
+
+    def write(self, append: bool = True) -> None:
+        """
+        Write the in-memory log messages to file.
+
+        Args:
+            append (bool): Append or overwrite the log on the file system
+
+        Returns: None
+        """
+        if self._log:
+            if self._overwrite or not append:
+                with _fuckit:
+                    _iolib.file_delete(self.logfile)  # just to be sure
+                _iolib.writecsv(self.logfile, self._log, header=['status', 'when', 'msg'], inner_as_rows=False, append=False)
+            else:
+                _iolib.writecsv(self.logfile, self._log, inner_as_rows=False, append=True)
+
+
+
+    def _read(self) -> None:
+        """Read log from file system if we do not want to overwrite"""
+        if not self._overwrite:
+            if _iolib.file_exists(self.logfile):
+                self._log = _iolib.readcsv_by_row(self.logfile)
