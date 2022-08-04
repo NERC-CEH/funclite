@@ -768,17 +768,17 @@ def get_file_parts(filepath: str) -> list:
     return [folder, fname, ext]
 
 
-def get_file_parts2(filepath):
-    """(str)->list[path, filepart, extension]
-    Given path to a file, split it into path, file part and extension.
+def get_file_parts2(filepath: str) -> list:
+    """
+    Split a full file path into path, file name with extension and dotted extension.
 
-    filepath:
-        full path to a file.
+    Args:
+        filepath (str): full path to a file.
 
     Returns:
-        The folder, the filename including the extension and the extension
+        list: [folder, file name with extension, dotted extension]
 
-    Example:
+    Examples:
         >>> get_file_parts2('c:/temp/myfile.txt')
         'c:/temp', 'myfile.txt', '.txt'
     """
