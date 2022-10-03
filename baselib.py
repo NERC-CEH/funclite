@@ -438,15 +438,13 @@ def list_get_dups(lst: list, thresh: int = 2, value_list_only: bool = False) -> 
         dict: If value_list_only is False. Keys are the duplicate values, values are the count of duplicates. Returns empty dict of no duplicates.
 
     Examples:
-        Default behaviour, all duplicates
+        Default behaviour, all duplicates\n
         >>> list_get_dups([1,1,2,3,4,4,4])
         {1:2, 4:3}
-
-        Only count duplicates with 3 or more occurences
+        \nOnly count duplicates with 3 or more occurences
         >>> list_get_dups([1,2,3,4,4], thresh=3)
         {}
-
-        Unique list of the values with duplicates
+        \nUnique list of the values with duplicates
         >>> list_get_dups([1, 1, 2, 3, 4, 4, 4, 5, 5, 5], thresh=3, value_list_only=True)
         [4, 5]
     """
@@ -505,6 +503,30 @@ def list_most_common(L, force_to_string=False):
         return count, -min_index
 
     return max(groups, key=_auxfun)[0]
+
+
+def lists_match(a: list, b: list, ignore_case: bool = False) -> bool:
+    """
+    Check if the contents of two list match.
+
+    Args:
+        a (list): First list
+        b (list): Second list
+        ignore_case (bool): Ignore case
+
+    Returns:
+        bool: If all elements of two lists match, ignoring order
+
+    Notes:
+        Considers unique values only, i.e. calls list(set()) on each list
+        prior to comparison.
+    """
+    c = list(set(a))
+    d = list(set(b))
+    if ignore_case:
+        return list_sym_diff(list(map(str.lower, c)), list(map(str.lower, d)))['a_and_b'] == len(c) == len(d)
+    return list_sym_diff(c, d)['a_and_b'] == len(c) == len(d)
+
 
 def lists_merge(first_has_priority=True, *args):
     """merge lists, filling in blanks according to
@@ -673,7 +695,8 @@ def list_not(lst: list, not_in_list: list) -> (list, None):
 
 def list_sym_diff(a: list, b: list) -> dict:
     """
-    Get a dictionary of the symetrical difference between two lists
+    Get a dictionary of the symetrical difference between two lists.
+
     Args:
         a (list): list of items
         b (list): list of items
@@ -731,12 +754,29 @@ def list_superset(lst1_is_supersetof: list, lst2: list) -> bool:
     return set(lst1_is_supersetof).issuperset(set(lst2))
 
 
-def list_symmetric_diff(lst1, lst2):
-    """(list,list)->list
-    Return all list elements not common
-    to both sets
+def list_symmetric_diff(lst1: list, lst2: list) -> set:
+    """
+    Return set of elements not common to both sets.
 
-    **Removes duplicates"""
+    i.e. The NOT of a union.
+
+    Args:
+        lst1 (list): list of items
+        lst2 (list): list of items
+
+    Returns:
+        set: Unique elements not common to both sets
+
+    Notes:
+        See list_sym_diff, which returns a more comprehensive result
+        as a dict.
+
+    Examples:
+        >>> list_symmetric_diff([1], [2])
+        {1, 2}
+        >>> list_symmetric_diff([1], [1])
+        {}
+    """
     return set(lst1) ^ set(lst2)
 
 

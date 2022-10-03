@@ -5,7 +5,8 @@
 import re as _re
 import numbers
 import random as _random
-import string as _string
+import string  # dont underscore, we may wish to access it on importing stringslib
+
 import datetime as _datetime
 import time as _time
 from typing import Any as _Any
@@ -83,7 +84,7 @@ def list_to_readable_str(seq: _List[_Any]) -> str:
 
 def iter_member_in_str(s: str, match: (str, tuple, list), ignore_case: bool = False) -> bool:
     """
-    Check if any member of an iterable is IN s
+    Check if any member of the iterable match occurs in string s
 
     Args:
         s (str): string to check list items against
@@ -91,7 +92,16 @@ def iter_member_in_str(s: str, match: (str, tuple, list), ignore_case: bool = Fa
         ignore_case (bool): make check case insensitive
 
     Returns:
-        bool: True if match in [ [],(),None,'',0 ] or if any item in member is IN s else False
+        bool: True if match in [ [],(),None,'',0 ].
+        i.e. if we pass nothing to match, then call it a match.
+        True if any item in match is IN s, else False.
+
+    Examples:
+        >>> iter_member_in_str('this_is_a_TEST', ['a_test'], ignore_case=False)
+        False
+        \nIgnoring case....
+        >>> iter_member_in_str('this_is_a_TEST', ['a_test'], ignore_case=True)
+        True
     """
     if not match: return True  # everything is a match if we have nothing to match to
     if type(match) is str:
@@ -152,21 +162,27 @@ def read_number(test, default=0):
         return default
 
 
-def rndstr(length):
+def rndstr(length=8, from_=string.ascii_uppercase + string.ascii_lowercase + string.digits):
     """(int) -> str
     Return random alphanumeric string of length l
 
-    l:
-        string length
+    Args:
+        length (int): String length
+        from_ (str): String to generate the random string from
 
-    Example:
-        >>>rndstr(3)
-        A12
-        >>>rndstr(5)
-        DeG12
+    Examples:
+        >>> import string
+        >>> rndstr(3)
+        'A12'
+        >>> rndstr(5, from_=string.ascii_lowercase)
+        'twgvy'
+        >>> rndstr(5, from_='AB')
+        'AABA'
     """
-    return ''.join(_random.choice(_string.ascii_uppercase + _string.ascii_lowercase + _string.digits) for _ in range(length))
+    return ''.join(_random.choice(from_) for _ in range(length))
 
+
+get_random_string = rndstr  # noqa Alternative name, I can never find rndstr
 
 def filter_alphanumeric1(s, encoding='ascii', strict=False, allow_cr=True, allow_lf=True, exclude=(), include=(),
                          replace_ampersand='and', remove_single_quote=False, remove_double_quote=False,
@@ -178,13 +194,16 @@ def filter_alphanumeric1(s, encoding='ascii', strict=False, allow_cr=True, allow
         s (str): string to filter
         encoding (str): specify encoding of s, implicitly converts characters between encodings
         strict (bool): only letters and numbers are returned, space is allowed
-        allow_cr, allow_lf: include or exclude CR
+        allow_cr: include or exclude CR
         allow_lf: include or exclude LF
         exclude (tuple): force exclusion of these chars
         include (tuple): force exclusion of these chars
         replace_ampersand: replace "&" with the argument
         remove_single_quote: remove single quote from passed string
         remove_double_quote: remove double quote from passed string
+        exclude_numbers: exclude digits
+        strip: strip spaces
+        fix_nbs: Replace none breaking spaces with spaces, which can then be filtered according to other arguments
 
     Returns:
         str: the filtered string
@@ -262,7 +281,7 @@ def filter_punctuation(s, exclude=('!', '?', '.'), replace=' '):
     """
     out = ''
     for a in s:
-        out += a if a not in _string.punctuation or a in exclude else replace
+        out += a if a not in string.punctuation or a in exclude else replace
     return out
 
 

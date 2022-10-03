@@ -8,12 +8,14 @@ from warnings import warn as _warn
 from enum import Enum as _Enum
 import inspect as _inspect
 
+import os as _os
 import os.path as _path
+import shutil as _shutil
+
 import errno as _errno
 import csv as _csv
 import glob as _glob
 import itertools as _itertools
-import os as _os
 import time as _time
 import shutil as _shutil
 import string as _string
@@ -50,7 +52,6 @@ def _var_get_name(var):
     #  see https://stackoverflow.com/questions/18425225/getting-the-name-of-a-variable-as-a-string
     callers_local_vars = _inspect.currentframe().f_back.f_locals.items()
     return [var_name for var_name, var_val in callers_local_vars if var_val is var]
-
 
 class CSVIo:
     """class for reading/writing _csv objects
@@ -889,10 +890,21 @@ def folder_copy(src, dest, ignore=()):
             print('Directory not copied. Error: %s' % e)
 
 
-def folder_generator(paths):
+def folder_generator(paths: (str, list)):
     """
-    (str|iterable)->yield str
-    Yields all subfolders
+    Yield subfolders in paths with wildcard match on any in match.
+
+    Args:
+        paths (str, list): Paths to iterate
+
+    Yields:
+        str: subfolders in paths
+
+    Notes:
+        Also see folder_generator2 which supports wildcard matching
+    Examples:
+        >>> [s for s in folder_generator2('C:/temp', 'folder')]
+        ['C:/temp/folder_for_me', 'C:/temp/folder_for_you']
     """
     if isinstance(paths, str):
         paths = [paths]
@@ -902,6 +914,33 @@ def folder_generator(paths):
         for fld, _, _ in _os.walk(pth):
             yield fld
 
+def folder_generator2(paths: (str, list), match: (str, list) = (), ignore_case: bool = True) -> str:
+    """
+    Yield subfolders in paths with wildcard match on any in match.
+
+    Args:
+        paths (str, list): Paths to iterate
+        match (str, list): Wildcard match on this. If empty or None, no filter is applied (i.e. every dir is yielded)
+        ignore_case (bool): Make match case insensitive
+
+    Yields:
+        str: subfolders in paths
+
+    Examples:
+        >>> [s for s in folder_generator2('C:/temp', 'folder')]
+        ['C:/temp/folder_for_me', 'C:/temp/folder_for_you']
+    """
+    if isinstance(paths, str):
+        paths = [paths]
+
+    if isinstance(match, str):
+        match = [match]
+
+    paths = [_path.normpath(p) for p in paths]
+    for pth in paths:
+        for fld, _, _ in _os.walk(pth):
+            if _stringslib.iter_member_in_str(fld, match, ignore_case):
+                yield fld
 
 def file_list_generator(paths: (str, list, tuple), wildcards: (str, list, tuple)):
     """
@@ -1021,6 +1060,28 @@ def file_list_generator_dfe(paths, wildcards, recurse=False):
     if not wildcards: wildcards = '*'
     for fname in file_list_generator1(paths, wildcards, recurse):
         yield (*get_file_parts2(fname), fname)
+
+
+def file_list_generator_as_list(paths: (list, tuple, str), wildcards: (list, tuple, str), recurse=False):
+    """
+    Get a list of file names in paths, matching wildcards.
+
+    Args:
+        paths (str, list, tuple): Single path or list/tuple of paths
+        wildcards (str, list, tuple): Single dotted file extension or list of dotted file extensions. None or empty iterable are treated as '*' (i.e. all files).
+        recurse (bool): recurse down folders
+
+    Returns:
+        list: list of file names (no paths)
+
+    Notes:
+        Calls file_list_generator_dfe, but less faff when need a simple list.
+
+    Examples:
+        >>> file_names_as_list(r'C:\TEMP', '*.pdf')
+        ['1.pdf', '2.pdf']
+    """
+    return [f for _, f, _, _ in file_list_generator_dfe(paths, wildcards, recurse)]
 
 
 def file_list_glob_generator(wilded_path, recurse=False):
@@ -1152,9 +1213,19 @@ def file_delete(fname, silent=True):
         _os.remove(fname)
 
 
-def files_delete(folder, delsubdirs=False):
-    """(str)->void
+def files_delete(folder: str, delsubdirs: bool = False) -> None:
+    """
     Delete all files in folder
+
+    Args:
+        folder (str): The folder
+        delsubdirs (bool): Delete subdirs as well
+
+    Returns:
+        None
+
+    Examples:
+        >>> files_delete('C:/TEMP', True)
     """
     folder = _path.normpath(folder)
     if not _path.exists(folder):
@@ -1557,6 +1628,21 @@ def create_folder(folder_name):
     if not _path.exists(folder_name):
         _os.makedirs(folder_name)
 
+folder_create = create_folder  # in keeping with other folder funcs, dont break existing code
+
+def folder_delete(fld: str):
+    """
+    Delete a folder. Calls shutil.rmtree. Suppresses all errors.
+
+    Args:
+        fld (str): the folder
+
+    Returns:
+        None
+    """
+    fld = _path.normpath(fld)
+    with _fuckit:
+        _shutil.rmtree(fld, ignore_errors=True)
 
 # endregion
 
