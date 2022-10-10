@@ -17,7 +17,7 @@ import csv as _csv
 import glob as _glob
 import itertools as _itertools
 import time as _time
-import shutil as _shutil
+
 import string as _string
 import tempfile as _tempfile
 import subprocess as _subprocess
@@ -220,7 +220,7 @@ class FileProcessTracker:
         """record image file as processed"""
         file_path = _path.normpath(file_path)
         files = [f[FileProcessTracker.eListIndex.file_path.value] for f in self._status_list]
-
+        i = None
         if ignore_no_item:
             try:
                 i = files.index(file_path)
@@ -305,10 +305,10 @@ class PickleHelper:
         """load the var"""
         if (self._force_load or self.var is None) and file_exists(self._dump_fqn):
             self.var = unpickle(self._dump_fqn)
-            if not isinstance(self.var, self._type) and not self.var:
+            if not isinstance(self.var, self._type) and not self.var:  # noqa
                 self.var = self._type()  # noqa
 
-        self.loaded = isinstance(self.var, self._type)
+        self.loaded = isinstance(self.var, self._type)  # noqa
 
     def delete_pkl(self):
         """delete the pickle"""
@@ -331,7 +331,7 @@ class PickleHelper:
         """
 
         if var is not None:
-            if not isinstance(var, self._type) and self._type is not None:
+            if not isinstance(var, self._type) and self._type is not None:  # noqa
                 raise ValueError('Expected variable var to have type %s, got %s' % (type(self._type), type(var)))
             self.var = var
         pickle(self.var, self._dump_fqn)
@@ -417,7 +417,7 @@ def readcsv(filename, cols=1, startrow=0, numericdata=False, error_on_no_file=Tr
 
     data = [0] * cols
     for i in range(cols):
-        data[i] = []
+        data[i] = []  # noqa
     if _sys.version_info.major == 2:
         with open(filename, 'rb') as csvfile:  # open the file, and iterate over its data
             csvdata = _csv.reader(csvfile)  # tell python that the file is a _csv
@@ -636,8 +636,25 @@ def get_platform():
     return 'linux'
 
 
-def get_file_count(paths, recurse=False):
-    """(list like|str)->int"""
+def get_file_count(paths: (str, list), recurse: bool = False) -> int:
+    """
+    Get file count in a folder or list of folders.
+
+    Args:
+        paths (str, list): Path or list of paths
+        recurse (bool): Recurse paths
+
+    Returns:
+        int: file count
+
+    Notes:
+        Left here to not break other code.
+        See file_count and file_count2 which support matching
+
+    Examples:
+        >>> get_file_count('C:/TEMP', False)
+        5
+    """
     cnt = 0
 
     if isinstance(paths, str):
@@ -903,7 +920,8 @@ def folder_generator(paths: (str, list)):
     Notes:
         Also see folder_generator2 which supports wildcard matching
     Examples:
-        >>> [s for s in folder_generator2('C:/temp', 'folder')]
+
+        >>> [s for s in folder_generator2('C:/temp', 'folder')]  # noqa
         ['C:/temp/folder_for_me', 'C:/temp/folder_for_you']
     """
     if isinstance(paths, str):
@@ -927,7 +945,7 @@ def folder_generator2(paths: (str, list), match: (str, list) = (), ignore_case: 
         str: subfolders in paths
 
     Examples:
-        >>> [s for s in folder_generator2('C:/temp', 'folder')]
+        >>> [s for s in folder_generator2('C:/temp', 'folder')]  # noqa
         ['C:/temp/folder_for_me', 'C:/temp/folder_for_you']
     """
     if isinstance(paths, str):
@@ -974,21 +992,51 @@ def file_list_generator(paths: (str, list, tuple), wildcards: (str, list, tuple)
         yield _path.normpath(vals)
 
 
-def file_count(paths, wildcards, recurse=False):
-    """(iterable|str, iterable|str, bool) -> int
-
+def file_count(paths: (str, list), wildcards: (str, list), match: (str, list) = '*', directory_match: (str, list) = '*', recurse: bool = False) -> int:
+    """
     Counts files in paths matching wildcards
 
-    paths:
-        tuple of list of paths
-    wildcards:
-        tuple or list of wildcards
-    recurse:
-        recurse down folders if true
+    Args:
+        paths (str, list): tuple of list of paths
+        wildcards (str, list): str or list of dotted file extensions e.g. ".jpg"
+        match (str, list): wildcard match
+        directory_match (str, list): wildcard match on dir name
+        recurse (bool): recurse down folders
+
+    Returns:
+        int: file count
+
+    Examples:
+        All images in C:/TEMP containing "greece" or "uk"
+        >>> file_count('C:/TEMP', ['.jpg', '.gif', 'bmp'], ['greece', 'uk'], True)
+        231
     """
+
     cnt = 0
-    for _ in file_list_generator1(paths, wildcards, recurse):
+    for f in file_list_generator1(paths, wildcards, recurse):
+        if (not match or match == '*') and (not directory_match or directory_match == '*'):
+            cnt += 1
+            continue
+
+        d, fname = get_file_parts2(f)[0:2]
+        if match and match != '*':
+            if isinstance(match, str):
+                mtc = [match]
+            else:
+                mtc = match
+            if not _baselib.list_member_in_str(fname, mtc, True):
+                continue
+
+        if directory_match and directory_match != '*':
+            if isinstance(directory_match, str):
+                dmtch = [directory_match]
+            else:
+                dmtch = directory_match
+            if not _baselib.list_member_in_str(d, dmtch, True):
+                continue
+
         cnt += 1
+
     return cnt
 
 
@@ -1018,11 +1066,8 @@ def file_list_generator1(paths: (str, list, tuple), wildcards: (str, list, tuple
 
     if isinstance(wildcards, str):
         wildcards = [wildcards]
-
+    if wildcards is None: wildcards = '*'
     wildcards = tuple(set(['*' + x.lower() if x[0] == '.' else x.lower() for x in wildcards]))
-
-    # for ind, v in enumerate(paths):
-    # paths[ind] = _path.normpath(v)
 
     for vals in (_stringslib.add_right(x[0]) + x[1] for x in _itertools.product(paths, wildcards)):
         if recurse:
@@ -1047,7 +1092,8 @@ def file_list_generator_dfe(paths, wildcards, recurse=False):
         tuple: returns a length 4 tuple, (folder, filename with extension, dotted extension, full fie path)
 
     Notes:
-        Case insentive to paths and wildcards (MS Windows - untested on other OS's
+        Case insentive to paths and wildcards (MS Windows - untested on other OS's.
+        Fixed bug where this would yield folders.
 
     Examples:
         >>> for folder, filename, extension, fullname in file_list_generator_dfe('C:/temp', '*.msi', recurse=False):
@@ -1059,7 +1105,9 @@ def file_list_generator_dfe(paths, wildcards, recurse=False):
     """
     if not wildcards: wildcards = '*'
     for fname in file_list_generator1(paths, wildcards, recurse):
-        yield (*get_file_parts2(fname), fname)
+        if folder_exists(fname):
+            continue
+        yield *get_file_parts2(fname), fname
 
 
 def file_list_generator_as_list(paths: (list, tuple, str), wildcards: (list, tuple, str), recurse=False):
@@ -1078,20 +1126,28 @@ def file_list_generator_as_list(paths: (list, tuple, str), wildcards: (list, tup
         Calls file_list_generator_dfe, but less faff when need a simple list.
 
     Examples:
-        >>> file_names_as_list(r'C:\TEMP', '*.pdf')
+        >>> file_list_generator_as_list(r'C:\TEMP', '*.pdf')
         ['1.pdf', '2.pdf']
     """
     return [f for _, f, _, _ in file_list_generator_dfe(paths, wildcards, recurse)]
 
 
-def file_list_glob_generator(wilded_path, recurse=False):
+def file_list_glob_generator(wilded_path:str, recurse: bool = False):
     """(str, bool)->yields strings (file paths)
     _glob.glob generator from wildcarded path
-    Wilded path would be something like 'c:/*.tmp' or c:/*.*
 
-    Yields actual file names, e.g. c:/temp/a.tmp
+    Yields fully qualified file names, e.g. c:/temp/a.tmp
 
-    SUPPORTS RECURSION
+    Args:
+        wilded_path (str): The path with wildcard. Is normpathed. e.g. 'c:/*.tmp' or c:/*.*
+
+    Yields:
+        str: The fully qualified path name
+
+
+    Notes:
+        Will now only yield files. Was previously bugged and would yield folders as well
+
     """
     fld, f = get_file_parts2(wilded_path)[0:2]
 
@@ -1099,6 +1155,8 @@ def file_list_glob_generator(wilded_path, recurse=False):
         wilded_path = _path.normpath(_path.join(fld, '**', f))
 
     for file in _glob.iglob(wilded_path, recursive=recurse):
+        if folder_exists(file):
+            continue
         yield _path.normpath(file)
 
 
@@ -1385,25 +1443,34 @@ def write_to_file(results, prefix='', open_in_npp=True, full_file_path='', sep='
     return filename
 
 
-def file_count2(pth, match='*'):
+def file_count2(pth: (str, list), match='*') -> int:
     """(str, str|iter) -> int
-    Get count of files in a folder.
+    Get count of files in a folder. Matches should be wildcarded.
 
-    pth: The folder to count
-    match: string or list of strings to feed into the glob (i.e. only count files which match the wildcard
+    Args:
+        pth: The folder or folders to count
+        match: Starred strings or list of strings to feed into the glob, e.g. *.jpg
 
-    Example:
-    file_count('C:\temp', '*.txt')
-    file_count('C:\temp', ['*.txt', '*.csv'])
+    Returns:
+        int: The file count
+
+    Examples:
+        >>> file_count('C:\temp', '*.txt')
+        >>> file_count('C:\temp', ['*.txt', '*.csv'])
     """
     cnt = 0
-    if type(match) is str:
-        f = _path.normpath('%s/%s' % (pth, match))
-        cnt = sum(1 for _ in _glob.glob(f))
-    else:
-        for s in match:
-            f = _path.normpath('%s/%s' % (pth, s))
+    if isinstance(pth, str):
+        pth = [pth]
+
+    for f in pth:  # noqa
+        if type(match) is str:
+            f = _path.normpath('%s/%s' % (pth, match))
             cnt += sum(1 for _ in _glob.glob(f))
+        else:
+            for s in match:
+                f = _path.normpath('%s/%s' % (pth, s))
+                cnt += sum(1 for _ in _glob.glob(f))
+
     return cnt
 
 
@@ -1533,8 +1600,8 @@ def file_move_to_fold(root: str, wildcards: any, match: str, subfold: str) -> in
 
     Args:
         root: Root dir with files to move
-        wildcards (str, list): wildcards to match, e.g. ['*.pdf', '*.docx']
-        match (str): partial match to identify file to move
+        wildcards (str, list): file extensions to match, e.g. ['*.pdf', '*.docx'], set to "*" or None for all file extensions
+        match (str): partial match to identify file to move. Matches tested against file basename.
         subfold (str): subfolder
 
     Returns:
@@ -1546,7 +1613,10 @@ def file_move_to_fold(root: str, wildcards: any, match: str, subfold: str) -> in
     """
     # TODO Debug me
     n = 0
-    for _, f, _, fname in file_list_generator_dfe(root, '*.pdf'):
+    if isinstance(wildcards, str):
+        wildcards = [wildcards]
+
+    for _, f, _, fname in file_list_generator_dfe(root, wildcards, recurse=False):
         if match not in f:
             continue
         dest = fixp(root, subfold)
@@ -1611,13 +1681,18 @@ def file_exists(file_name):
     return False
 
 
-def folder_exists(folder_name):
-    """check if folder exists"""
-    folder_name = _path.normpath(folder_name)
-    if isinstance(folder_name, str):
-        return _path.exists(fixp(folder_name))
+def folder_exists(folder_name) -> bool:
+    """Check if folder exists, does not raise an error.
 
-    return False
+    Args:
+        folder_name (any): folder name, any type
+
+    Returns:
+        bool: True if exists, else false
+    """
+    if not isinstance(folder_name, str):
+        return False
+    return _path.isdir(_path.normpath(folder_name))
 
 
 def create_folder(folder_name):
@@ -1916,3 +1991,14 @@ def unpickle(path: str) -> any:
         with open(path, 'rb') as myfile:
             return _pickle.load(myfile)
     return None
+
+
+
+
+
+
+
+
+if __name__ == '__main__':
+    # Quick debugging here
+    file_count(r'\\nerctbctdb\shared\shared\PROJECTS\WG ERAMMP2 (06810)\2 Field Survey\Data Management\submission\2 images\freshwater\features', wildcards= '*', directory_match='2021', recurse=True)

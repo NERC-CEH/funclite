@@ -6,6 +6,7 @@ import re as _re
 import numbers
 import random as _random
 import string  # dont underscore, we may wish to access it on importing stringslib
+import base64 as _base64
 
 import datetime as _datetime
 import time as _time
@@ -21,6 +22,22 @@ ascii_punctuation_strict = ['!', '"', '(', ')', ',', '-', '.', ':', ';', '?', "'
 ascii_and = ['&', '+']
 ascii_or = ['|']
 
+
+def encode_b64(s:str) -> str:
+    """
+    Encode a string to base64
+
+    Args:
+        s ():
+
+    Returns:
+        str: base64 encoded string
+
+    Examples:
+        >>> encode_b64('sassadad')
+        'c2Fzc2FkYWQ='
+    """
+    return _base64.b64encode(bytes(s, 'utf-8')).decode('utf-8')
 
 def plus_minus():
     """get plus minus"""

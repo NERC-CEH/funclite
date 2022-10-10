@@ -107,3 +107,24 @@ class Log:
         if not self._overwrite:
             if _iolib.file_exists(self.logfile):
                 self._log = _iolib.readcsv_by_row(self.logfile)
+
+
+
+def get_datestamped_name(fld: str, suffix: str = '', ext: str = '.log') -> str:
+    """
+    Helper to get a datestamped name.
+
+    Args:
+        dir (str): The dir inwhich the file is created
+        suffix (str): File name suffix, no seperators are assumed, so include in name.
+        ext (str): The dotted extension
+
+    Returns:
+        str: Full log file name.
+
+    Examples:
+        >>> make_datestamped_name('C:/temp', suffix='IMPORT_', ext='.txt')
+        'C:/temp/IMPORT_2022-02-01 123944.txt'
+    """
+    return _path.normpath('%s/%s%s%s' % (fld, suffix, _stringslib.pretty_date_now(with_time=True, time_sep=''), ext))
+
