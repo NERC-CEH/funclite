@@ -7,7 +7,7 @@ Supports appending to existing log, or overwriting.
 Example:
     >>> L = Log('c:/temp/log.log')
     >>> L.log('my message', EnumLogStatus.INFO)
-    >>> L._write()
+    >>> L.write()
 """
 
 from os import path as _path
@@ -40,7 +40,7 @@ class Log:
     Examples:
         >>> L = Log('c:/temp/log.log')
         >>> L.log('my message', EnumLogStatus.INFO)
-        >>> L._write()
+        >>> L._write()  # noqa
     """
     _COL_CNT = 3
 
@@ -115,7 +115,7 @@ def get_datestamped_name(fld: str, suffix: str = '', ext: str = '.log') -> str:
     Helper to get a datestamped name.
 
     Args:
-        dir (str): The dir inwhich the file is created
+        fld (str): The dir inwhich the file is created
         suffix (str): File name suffix, no seperators are assumed, so include in name.
         ext (str): The dotted extension
 
@@ -123,8 +123,7 @@ def get_datestamped_name(fld: str, suffix: str = '', ext: str = '.log') -> str:
         str: Full log file name.
 
     Examples:
-        >>> make_datestamped_name('C:/temp', suffix='IMPORT_', ext='.txt')
+        >>> get_datestamped_name('C:/temp', suffix='IMPORT_', ext='.txt')
         'C:/temp/IMPORT_2022-02-01 123944.txt'
     """
     return _path.normpath('%s/%s%s%s' % (fld, suffix, _stringslib.pretty_date_now(with_time=True, time_sep=''), ext))
-

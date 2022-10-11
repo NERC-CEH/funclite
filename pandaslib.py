@@ -9,7 +9,11 @@ import statsmodels.stats.api as _sms
 import pandas as _pd
 # from pandas.compat import StringIO as _StringIO
 import numpy as _np
-import xlwings as _xlwings
+
+try:
+    import xlwings as _xlwings
+except Exception as err:
+    print('Failed to import xlwings.\n\n%s' % err)
 
 from sklearn.metrics import mean_squared_error as _mean_squared_error
 
