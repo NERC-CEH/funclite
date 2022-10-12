@@ -23,12 +23,13 @@ ascii_and = ['&', '+']
 ascii_or = ['|']
 
 
-def encode_b64(s:str) -> str:
+def encode_b64(s: str, on_if_not='') -> str:
     """
     Encode a string to base64
 
     Args:
-        s ():
+        s (str): string to encode
+        on_if_not (any): value to return when "if not s" is True. i.e. Default if s looks empty
 
     Returns:
         str: base64 encoded string
@@ -36,8 +37,14 @@ def encode_b64(s:str) -> str:
     Examples:
         >>> encode_b64('sassadad')
         'c2Fzc2FkYWQ='
+        \nNow using if_not
+        >>> encode_b64(None, on_if_not='this_was_none')
+        'this_was_none'
     """
+    if not s:
+        return on_if_not
     return _base64.b64encode(bytes(s, 'utf-8')).decode('utf-8')
+
 
 def plus_minus():
     """get plus minus"""

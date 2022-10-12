@@ -622,9 +622,15 @@ def exit():  # noqa
     _sys.exit()
 
 
-def get_platform():
-    """-> str
-    returns windows, mac, linux
+def get_platform() -> str:
+    """
+    Get platform/os name as string.
+
+    Args:
+        None
+
+    Returns:
+         str: Platform, IN ['windows', 'mac', 'linux']
     """
     s = _sys.platform.lower()
     if s in ("linux", "linux2"):
@@ -883,14 +889,25 @@ def get_drive_from_uuid(uuid, strip=('-',)):
     return None
 
 
-def folder_copy(src, dest, ignore=()):
-    """(str, str, list|tuple|None) -> None
-
+def folder_copy(src: str, dest: str, ignore: (list, tuple) = ()) -> None:
+    """
     Recursive copy of folder src to folder dest.
-    
-    Will fail if dest already exists.
+    This copies all files and folders BELOW dest
 
-    This copies all files and folders BELOW dest.
+    Args:
+          src (str): Source folder
+          dest (str): Dest folder
+          ignore (list, tuple): ignore these patterns (see shutil.ignore_patterns)
+
+    Returns:
+        None
+
+    Notes:
+        Will fail if dest already exists.
+
+    Examples:
+        Copy all files and folders, ignoring some image types.
+        >>> folder_copy('C:/TEMP/mydir', 'C:/TEMP/mydir_copy', ignore=['*.jpg'. '*.gif'])
     """
     src = _path.normpath(src)
     dest = _path.normpath(dest)
@@ -1225,6 +1242,18 @@ def files_delete2(filenames):
         if file_exists(fname):
             _os.remove(fname)
 
+def file_delete(fname: str) -> None:
+    """Delete a single file
+
+    Is normpathed first
+
+    Args:
+        fname (str): file to be deleted
+
+    Returns:
+        None
+    """
+    files_delete2(fname)
 
 def files_delete_wildcarded(root: str, match=(), not_match=(), recurse=False, show_progress: bool = False):
     """
@@ -1301,8 +1330,22 @@ def files_delete(folder: str, delsubdirs: bool = False) -> None:
             print('Could not clear summary file(s). They are probably being used by tensorboard')
 
 
-def get_temp_fname(suffix='', prefix='', name_only=False):
-    """get a temp filename"""
+def get_temp_fname(suffix: str = '', prefix: str = '', name_only: bool = False) -> str:
+    """
+    Get a random filename, rooted in the users temporary directory (%TEMP%)
+    Args:
+        suffix (str): Suffix, use to define an extension
+        prefix (str): Prefix
+        name_only (bool): exclude path from basename
+
+    Returns:
+        str: the temporary file name, stored in the temp dir
+
+    Examples:
+        >>> get_temp_fname('.gdb', '__')
+        'C:\\Users\\admin\\AppData\\Local\\Temp\\__8d2zq_9m.gdb'
+    """
+
     f = _tempfile.mktemp(suffix, prefix)
     if name_only:
         _, f, _ = get_file_parts2(f)
@@ -1993,7 +2036,9 @@ def unpickle(path: str) -> any:
     return None
 
 
-
+class Info:
+    """Way of grouping info stuff"""
+    platform = get_platform
 
 
 
