@@ -889,7 +889,7 @@ def get_drive_from_uuid(uuid, strip=('-',)):
     return None
 
 
-def folder_copy(src: str, dest: str, ignore: (list, tuple) = ()) -> None:
+def folder_copy(src: str, dest: str, ignore: (list, tuple) = (), raise_error: bool = False) -> None:
     """
     Recursive copy of folder src to folder dest.
     This copies all files and folders BELOW dest
@@ -898,6 +898,7 @@ def folder_copy(src: str, dest: str, ignore: (list, tuple) = ()) -> None:
           src (str): Source folder
           dest (str): Dest folder
           ignore (list, tuple): ignore these patterns (see shutil.ignore_patterns)
+          raise_error (bool): Raise an error if it occurs
 
     Returns:
         None
@@ -921,7 +922,10 @@ def folder_copy(src: str, dest: str, ignore: (list, tuple) = ()) -> None:
         if e.errno == _errno.ENOTDIR:
             _shutil.copy(src, dest)
         else:
-            print('Directory not copied. Error: %s' % e)
+            if raise_error:
+                raise e
+            else:
+                print('Directory not copied. Error: %s' % e)
 
 
 def folder_generator(paths: (str, list)):
@@ -1724,14 +1728,18 @@ def file_exists(file_name):
     return False
 
 
-def folder_exists(folder_name) -> bool:
+def folder_exists(folder_name: str) -> bool:
     """Check if folder exists, does not raise an error.
 
     Args:
-        folder_name (any): folder name, any type
+        folder_name (str, any): folder name. IF folder_name is not a string, return false.
 
     Returns:
         bool: True if exists, else false
+        any: False if folder_name is not a string.
+
+    Notes:
+        Why? We don't raise an error if folder_name is None
     """
     if not isinstance(folder_name, str):
         return False

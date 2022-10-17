@@ -693,13 +693,14 @@ def list_not(lst: list, not_in_list: list) -> (list, None):
     return list(set(lst) - set(not_in_list))  # noqa
 
 
-def list_sym_diff(a: list, b: list) -> dict:
+def list_sym_diff(a: list, b: list, rename_keys: (None, list, tuple) = None) -> dict:
     """
     Get a dictionary of the symetrical difference between two lists.
 
     Args:
         a (list): list of items
         b (list): list of items
+        rename_keys (list, tuple, None): Rename the keys to these values. Matches by index.
 
     Returns:
         dict: Dictionary, {'a_notin_b':[..], 'a_and_b':[...], 'b_notin_a':[...]}
@@ -707,8 +708,19 @@ def list_sym_diff(a: list, b: list) -> dict:
     Examples:
         >>> list_sym_diff([1,2,3,4,10], [2,10,11,12])
         {'a_notin_b':[1, 3, 4], 'a_and_b':[2, 10], 'b_notin_a':[10, 11]}
+        \n\nSame, but rename the keys
+        >>> list_sym_diff([1,2,3,4,10], [2,10,11,12], rename_keys=['A!B', 'A&B', 'B!A'])
+        {'A!B':[1, 3, 4], 'A&B':[2, 10], 'B!A':[10, 11]}
     """
-    return {'a_notin_b': list_not(a, b), 'a_and_b': list_and(a, b), 'b_notin_a': list_not(b, a)}
+    d = {'a_notin_b': list_not(a, b), 'a_and_b': list_and(a, b), 'b_notin_a': list_not(b, a)}
+    if rename_keys:
+        d[rename_keys[0]] = d.pop('a_notin_b')
+        if len(rename_keys) > 1:
+            d[rename_keys[1]] = d.pop('a_and_b')
+        if len(rename_keys) > 2:
+            d[rename_keys[2]] = d.pop('b_notin_a')
+
+    return  d
 
 
 def list_and(lst1, lst2):
