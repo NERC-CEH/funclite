@@ -517,13 +517,14 @@ def date_str_to_iso(s, fmt='%d/%m/%Y %H:%M'):
     return _datetime.datetime.strptime(s, fmt).strftime('%Y%m%d %H:%M:%S')
 
 
-def pretty_date_now(sep='-', with_time=False, time_sep=':') -> str:
+def pretty_date_now(sep: str = '-', with_time: bool = False, time_sep: str = ':', date_time_sep: str = ' ') -> str:
     """Date as a pretty ISO style string.
 
     Args:
         sep (str): Seperator to use
         with_time (bool): include time
         time_sep (str): time seperator
+        date_time_sep (str): seperator between data and time (only relevant when with_time = True
 
     Returns:
         str: The formatted date
@@ -531,13 +532,18 @@ def pretty_date_now(sep='-', with_time=False, time_sep=':') -> str:
     Examples:
         >>> pretty_date_now()
         2021-12-25
+        \nNo month seperator
         >>> pretty_date_now(sep='')
         20211225
+        \nInclude the time
         >>> pretty_date_now(with_time=True)
         2021-12-25 12:39:44
+        \nSpecify date_time_sep
+        >>> pretty_date_now(with_time=True, date_time_sep='*')
+        2021-12-25*12:39:44
     """
     if with_time:
-        s = '%Y{}%m{}%d %H{}%M{}%S'.format(sep, sep, time_sep, time_sep)
+        s = '%Y{}%m{}%d{}%H{}%M{}%S'.format(sep, sep, date_time_sep, time_sep, time_sep)
     else:
         s = '%Y{}%m{}%d'.format(sep, sep)
     return _time.strftime(s)

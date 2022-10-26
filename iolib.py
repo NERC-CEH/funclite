@@ -32,6 +32,8 @@ import numpy as _numpy
 import fuckit as _fuckit
 
 import funclite.stringslib as _stringslib
+from funclite.stringslib import pretty_date_now, pretty_date_time_now  # noqa
+
 from funclite.numericslib import round_normal as _rndnorm
 from funclite.stopwatch import StopWatch as _StopWatch
 import funclite.baselib as _baselib
