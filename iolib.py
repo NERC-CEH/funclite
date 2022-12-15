@@ -1900,12 +1900,16 @@ class PrintProgress:
         print_progress(self.iteration, self.maximum, prefix='%i of %i' % (self.iteration, self.maximum), bar_length=self.bar_length, suffix=self._get_suffix(suffix))
         self.iteration += step
 
-    def reset(self, maximum=None):
-        """reset the counter. set max
-        if need to change total expected
-        iterations.
+    def reset(self, maximum: (int, None) = None):
+        """Reset the counter. Set max if need to change total expected iterations.
+
+        Args:
+            maximum (int, None): Reset to counter to 0. Change the maximum if maximum is an int.
+
+        Returns:
+            None
         """
-        if max:
+        if maximum:
             self.maximum = maximum
         self.iteration = 1
         self.StopWatch.reset()

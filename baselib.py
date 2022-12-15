@@ -479,7 +479,7 @@ def list_add_elementwise(lsts):
 
 def list_most_common(L, force_to_string=False):
     """(list, bool)->str|int|float
-    Find most common value in list
+    Find most _common value in list
 
     force_to_string:
         make everything a string, use if list
@@ -768,7 +768,7 @@ def list_superset(lst1_is_supersetof: list, lst2: list) -> bool:
 
 def list_symmetric_diff(lst1: list, lst2: list) -> set:
     """
-    Return set of elements not common to both sets.
+    Return set of elements not _common to both sets.
 
     i.e. The NOT of a union.
 
@@ -777,7 +777,7 @@ def list_symmetric_diff(lst1: list, lst2: list) -> set:
         lst2 (list): list of items
 
     Returns:
-        set: Unique elements not common to both sets
+        set: Unique elements not _common to both sets
 
     Notes:
         See list_sym_diff, which returns a more comprehensive result

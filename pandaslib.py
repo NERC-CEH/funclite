@@ -497,7 +497,7 @@ def df_fromstring(str_, sep=',', header=0, names=None, **args):  # noqa
 
 def df_replace_welsh(df):
     """
-    Replace common welsh unicode with ascii
+    Replace _common welsh unicode with ascii
     Args:
         df: dataframe
 
@@ -524,7 +524,7 @@ def df_from_dict(d):
 
 def pandas_join_multi(dfs: list, key: str) -> _pd.DataFrame:
     """
-    Joins all dataframes by a common column
+    Joins all dataframes by a _common column
 
     Args:
         dfs: list or tuple of dataframes
