@@ -628,9 +628,6 @@ def get_platform() -> str:
     """
     Get platform/os name as string.
 
-    Args:
-        None
-
     Returns:
          str: Platform, IN ['windows', 'mac', 'linux']
     """
@@ -1155,22 +1152,21 @@ def file_list_generator_as_list(paths: (list, tuple, str), wildcards: (list, tup
     return [f for _, f, _, _ in file_list_generator_dfe(paths, wildcards, recurse)]
 
 
-def file_list_glob_generator(wilded_path:str, recurse: bool = False):
-    """(str, bool)->yields strings (file paths)
+def file_list_glob_generator(wilded_path: str, recurse: bool = False):
+    """
     _glob.glob generator from wildcarded path
 
     Yields fully qualified file names, e.g. c:/temp/a.tmp
 
     Args:
         wilded_path (str): The path with wildcard. Is normpathed. e.g. 'c:/*.tmp' or c:/*.*
+        recurse (bool): recurse
 
     Yields:
         str: The fully qualified path name
 
-
     Notes:
         Will now only yield files. Was previously bugged and would yield folders as well
-
     """
     fld, f = get_file_parts2(wilded_path)[0:2]
 
@@ -1261,6 +1257,7 @@ def file_delete(fname: str) -> None:
     """
     files_delete2(fname)
 
+
 def files_delete_wildcarded(root: str, match=(), not_match=(), recurse=False, show_progress: bool = False):
     """
     Delete files that match or do not match
@@ -1283,6 +1280,7 @@ def files_delete_wildcarded(root: str, match=(), not_match=(), recurse=False, sh
         PP = PrintProgress(iter_=files_)
     if isinstance(match, str): match = [match]
     if isinstance(not_match, str): not_match = [not_match]
+
     for f in files_:  # Debug me
         _, fname, _ = get_file_parts2(f)
         if match:
@@ -1297,7 +1295,7 @@ def files_delete_wildcarded(root: str, match=(), not_match=(), recurse=False, sh
             PP.increment()  # noqa
 
 
-def file_delete(fname, silent=True):
+def file_delete2(fname, silent=True):
     fname = _path.normpath(fname)
     if silent:
         with _fuckit:
@@ -1339,6 +1337,7 @@ def files_delete(folder: str, delsubdirs: bool = False) -> None:
 def get_temp_fname(suffix: str = '', prefix: str = '', name_only: bool = False) -> str:
     """
     Get a random filename, rooted in the users temporary directory (%TEMP%)
+
     Args:
         suffix (str): Suffix, use to define an extension
         prefix (str): Prefix
@@ -1358,15 +1357,26 @@ def get_temp_fname(suffix: str = '', prefix: str = '', name_only: bool = False) 
     return f
 
 
-def get_file_name2(fld, ext, length=3):
+def get_file_name2(fld: str, ext: str = '', length: int = 3) -> str:
     """(str, str, int)-> str
-    generate a random filename
-    ensuring it does not already exist in
-    folder fld.
+    Generate a random filename from alpha characters only.
+    Ensures the generated name does not exist in "fld"
 
-    Example:
-    >>>get_file_name2('C:\temp', '.txt', 4)
-    'C:/temp/ABeD.txt'
+    Args:
+        fld (str): root folder
+        ext (str): extension
+        length (int): length of name to generate, excluding extension
+
+    Returns:
+        str: the random file name
+
+    Examples:
+        >>> get_file_name2('C:\temp', '.txt', 4)
+        'C:/temp/ABeD.txt'
+
+        # Just a random string of length 4
+        >>> get_file_name2(length=4)
+        'ABeD'
     """
     n = 0
     while True:
@@ -1379,17 +1389,20 @@ def get_file_name2(fld, ext, length=3):
     return s
 
 
-def get_file_name(path='', prefix='', ext='.txt'):
-    """(str|None, str, str) -> str
-    Returns a filename, based on a datetime stamp
+def get_file_name(path: str = '', prefix: str = '', ext: str = '.txt') -> str:
+    """
+    Returns a filename, based on a datetime stamp.
 
-    path:
-        path to use, if path='', use CWD,
-        if None, then just the filename is returned
-    prefix:
-        prefix to use
-    ext:
-        extension
+    Args:
+        path (str):  path to use, if path='', use CWD,  if None, then just the filename is returned
+        prefix (str): prefix to use
+        ext (str): extension
+
+    Returns:
+        str: A datetime stamped file name
+
+    Notes:
+        See get_file_name2 if you want to get just a random file name by specifying a file name length.
     """
     if path == '':
         path = _os.getcwd()
@@ -2060,4 +2073,4 @@ class Info:
 
 if __name__ == '__main__':
     # Quick debugging here
-    file_count(r'\\nerctbctdb\shared\shared\PROJECTS\WG ERAMMP2 (06810)\2 Field Survey\Data Management\submission\2 images\freshwater\features', wildcards= '*', directory_match='2021', recurse=True)
+    file_count(r'\\nerctbctdb\shared\shared\PROJECTS\WG ERAMMP2 (06810)\2 Field Survey\Data Management\submission\2 images\freshwater\features', wildcards='*', directory_match='2021', recurse=True)
