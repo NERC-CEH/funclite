@@ -1456,6 +1456,32 @@ def open_file(filename: str) -> None:
         _subprocess.call(('xdg-open', filename))
 
 
+def file_to_string(file_:str, encoding: str = 'utf-8', strip_newlines: bool = False) -> str:
+    """
+    Read a text file as a string.
+
+    Args:
+        file_ (str): Path to the file to read
+        encoding (str): Encoding of the file
+        strip_newlines (bool): Remove newlines
+
+    Returns:
+        str: The text file as a string
+
+    Examples:
+        >>> file_to_string('c:/my.txt')
+        'the quick brown fox'
+    """
+
+    file_ = _path.normpath(file_)
+    if strip_newlines:
+        with open(file_, mode='r', encoding=encoding) as file:
+            return file.read().replace('\n', '')
+
+    with open(file_, mode='r', encoding=encoding) as file:
+        return file.read()
+
+
 def write_to_file(results, prefix='', open_in_npp=True, full_file_path='', sep='\n'):
     """
     (str|iterable, str, bool, str, str) -> str
