@@ -1,6 +1,7 @@
 """basic number related helper functions"""
 import math as _math
 
+
 def is_int(s: any) -> bool:
     """
     Test if value looks like an int
@@ -42,28 +43,40 @@ def translate_scale(val_in, out_min, out_max, val_in_max):
     >>>translate_scale(5000, 0, 1, 100000)
     0.05
     """
-    return val_in*(out_max - out_min)*(1/val_in_max) + out_min
+    return val_in * (out_max - out_min) * (1 / val_in_max) + out_min
 
 
-def is_float(test: any) -> bool:
+def is_float(test: any, int_is_float: bool = True) -> bool:
     """
     Return true of false if s is a float
 
     Args:
         test (any): Value to test
+        int_is_float (bool): If evaluates as an int, do we call it a float
 
     Returns:
-        bool: True of s can evaluate as a float
+        bool: True if s can evaluate as a float
 
     Examples:
         >>> is_float('1')
         True
+
+        >>> is_float(1, int_is_float=False)
+        False
+
         >>> is_float('2.33')
         True
+
         >>> is_float('A.1')
         False
     """
     try:
+        if is_int(test) and int_is_float:
+            return True
+
+        if is_int(test) and not int_is_float:
+            return False
+
         float(test)
         return True
     except ValueError:
@@ -81,14 +94,13 @@ def roundx(v):
 
 def round_normal(x, y=0):
     """ A classical mathematical rounding by Voznica """
-    m = int('1'+'0'*y) # multiplier - how many positions to the right
-    q = x*m # shift to the right by multiplier
-    c = int(q) # new number
-    i = int( (q-c)*10 ) # indicator number on the right
+    m = int('1' + '0' * y)  # multiplier - how many positions to the right
+    q = x * m  # shift to the right by multiplier
+    c = int(q)  # new number
+    i = int((q - c) * 10)  # indicator number on the right
     if i >= 5:
         c += 1
-    return c/m
-
+    return c / m
 
 
 def hex2rgb(v):
@@ -100,7 +112,7 @@ def hex2rgb(v):
     v = [s.lstrip('#') for s in v]
     out = []
     for h in v:
-        out.append((tuple(int(h[i:i+2], 16) for i in (0, 2, 4))))
+        out.append((tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))))
     return out
 
 
@@ -126,5 +138,3 @@ def is_numeric(v: any) -> bool:
         True
     """
     return is_int(v) and is_float(v)
-
-
