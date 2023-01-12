@@ -1008,11 +1008,12 @@ def file_list_generator(paths: (str, list, tuple), wildcards: (str, list, tuple)
         wildcards = [wildcards]
     if isinstance(paths, str):
         paths = [paths]
-    ww = ['*' + x if x[0] == '.' else x for x in wildcards]
+    ww = ['*' + x if x[0] == '.' else x for x in wildcards]  # add * if just dotted i.e. .jpg -> *.jpg
 
-    for vals in (_stringslib.add_right(x[0]) + x[1]
-                 for x in _itertools.product(paths, ww)):
-        yield _path.normpath(vals)
+    for dir_, ext in _itertools.product(paths, ww):
+        wild_path = fixp(dir_, ext)
+        for fname in file_list_glob_generator(wild_path, False):
+            yield _path.normpath(fname)
 
 
 def file_count(paths: (str, list), wildcards: (str, list), match: (str, list) = '*', directory_match: (str, list) = '*', recurse: bool = False) -> int:
@@ -1541,7 +1542,7 @@ def file_count2(pth: (str, list), match='*') -> int:
 
     Args:
         pth: The folder or folders to count
-        match: Starred strings or list of strings to feed into the glob, e.g. *.jpg
+        match: Starred strings or list of strings to feed into the glob, e.g. *.jpg. Confirmed as case insensitive on Windows. Not tested on other OSs
 
     Returns:
         int: The file count
@@ -1560,8 +1561,8 @@ def file_count2(pth: (str, list), match='*') -> int:
             cnt += sum(1 for _ in _glob.glob(f))
         else:
             for s in match:
-                f = _path.normpath('%s/%s' % (pth, s))
-                cnt += sum(1 for _ in _glob.glob(f))
+                f_cur = _path.normpath('%s/%s' % (f, s))
+                cnt += sum(1 for _ in _glob.glob(f_cur))
 
     return cnt
 

@@ -1,6 +1,7 @@
 """main init for funclite"""
 from funclite import *
 
+
 def totextfile(s, fname):
     """dum s, to a file.
     where s can be a string, list, dict etc
