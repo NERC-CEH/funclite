@@ -55,6 +55,7 @@ def _var_get_name(var):
     callers_local_vars = _inspect.currentframe().f_back.f_locals.items()
     return [var_name for var_name, var_val in callers_local_vars if var_val is var]
 
+
 class CSVIo:
     """class for reading/writing _csv objects
     can work standalone or as the backbone for CSVMatch"""
@@ -952,6 +953,7 @@ def folder_generator(paths: (str, list)):
         for fld, _, _ in _os.walk(pth):
             yield fld
 
+
 def folder_generator2(paths: (str, list), match: (str, list) = (), ignore_case: bool = True) -> str:
     """
     Yield subfolders in paths with wildcard match on any in match.
@@ -979,6 +981,7 @@ def folder_generator2(paths: (str, list), match: (str, list) = (), ignore_case: 
         for fld, _, _ in _os.walk(pth):
             if _stringslib.iter_member_in_str(fld, match, ignore_case):
                 yield fld
+
 
 def file_list_generator(paths: (str, list, tuple), wildcards: (str, list, tuple)):
     """
@@ -1244,6 +1247,7 @@ def files_delete2(filenames):
         if file_exists(fname):
             _os.remove(fname)
 
+
 def file_delete(fname: str) -> None:
     """Delete a single file
 
@@ -1456,7 +1460,7 @@ def open_file(filename: str) -> None:
         _subprocess.call(('xdg-open', filename))
 
 
-def file_to_string(file_:str, encoding: str = 'utf-8', strip_newlines: bool = False) -> str:
+def file_to_string(file_: str, encoding: str = 'utf-8', strip_newlines: bool = False) -> str:
     """
     Read a text file as a string.
 
@@ -1680,7 +1684,6 @@ def files_move(from_: str, tofld: str, delete_on_exists: bool = True, showprogre
     return i
 
 
-
 def file_move_to_fold(root: str, wildcards: any, match: str, subfold: str) -> int:
     """
     Move a file to a folder, where file has a partial match to a string and
@@ -1739,6 +1742,7 @@ def file_move(fname: str, tofld: str, delete_on_exists: bool = True) -> None:
         file_delete(fixp(tofld, get_file_parts2(fname)[1]))
     _shutil.move(fname, tofld)
 
+
 def file_create(file_name, s=''):
     """(str, str) -> void
     Creates file  and write s to it
@@ -1795,7 +1799,9 @@ def create_folder(folder_name):
     if not _path.exists(folder_name):
         _os.makedirs(folder_name)
 
+
 folder_create = create_folder  # in keeping with other folder funcs, dont break existing code
+
 
 def folder_delete(fld: str):
     """
@@ -1810,6 +1816,7 @@ def folder_delete(fld: str):
     fld = _path.normpath(fld)
     with _fuckit:
         _shutil.rmtree(fld, ignore_errors=True)
+
 
 # endregion
 
@@ -2092,9 +2099,6 @@ def unpickle(path: str) -> any:
 class Info:
     """Way of grouping info stuff"""
     platform = get_platform
-
-
-
 
 
 if __name__ == '__main__':
