@@ -1102,6 +1102,71 @@ def file_list_generator1(paths: (str, list, tuple), wildcards: (str, list, tuple
                 yield _path.normpath(myfile)
 
 
+def file_list_generator2(paths: (str, list, tuple), wildcards: (str, list, tuple), find: (str, tuple, list, None) = None, exclude: (str, tuple, list, None) = None, recurse: bool = False) -> str:
+    """
+    Takes path(s) and wildcard(s), yielding the
+    path-normed full path to matched files.
+
+    Support find and exclude lists. Exclude overrides find.
+
+    Args:
+        paths (str, list, tuple): Single path or list/tuple of paths
+        wildcards (str, list, tuple): Single file extension or list of file extensions. Extensions can be star-dotted or dotted.
+        find (list, str, tuple, None): list or string, to match file names
+        exclude (list, str, tuple, None): list or string, to exclude file names. Overrides find.
+        recurse (bool): recurse down folders
+
+    Yields:
+        str: file path
+
+    Examples:
+        >>> for fname in file_list_generator1('C:/temp', '*.txt', find=['123', 'abc'], exclude=['ignore', 'bad'], recurse=False):
+        >>>     print(fname)
+        'C:/temp/file.txt'
+        'C:/temp/file1.txt'
+        ....
+        >>> for fname in file_list_generator1(['C:/temp', 'C:/windows'], ['.bat', '.cmd'], recurse=True):
+    """
+
+    def _filter(s: str, find_, exclude_) -> bool:
+        found = True
+        if not (find_ and exclude_):
+            return True
+
+        if isinstance(find_, str):  find_ = [find]
+        if isinstance(exclude_, str): exclude_ = [exclude]
+
+        # found is first used as a flag to determine if we have found text IN exclude
+        if exclude_:
+            found = _baselib.list_member_in_str(s, exclude_)  # i.e. have we found anything that wildcard matches text IN exclude
+            if found:
+                return False
+
+        if find_:
+            found = _baselib.list_member_in_str(s, find)
+        return found
+
+
+    if isinstance(paths, str):
+        paths = [paths]
+
+    if isinstance(wildcards, str):
+        wildcards = [wildcards]
+
+    if wildcards is None: wildcards = '*'
+    wildcards = tuple(set(['*' + x.lower() if x[0] == '.' else x.lower() for x in wildcards]))
+
+    for vals in (_stringslib.add_right(x[0]) + x[1] for x in _itertools.product(paths, wildcards)):
+        if recurse:
+            for f in file_list_glob_generator(vals, recurse=True):
+                if _filter(get_file_parts2(f)[1], find, exclude):
+                    yield _path.normpath(f)
+        else:
+            for myfile in _glob.glob(_path.normpath(vals)):
+                if _filter(get_file_parts2(myfile)[1], find, exclude):
+                    yield _path.normpath(myfile)
+
+
 def file_list_generator_dfe(paths, wildcards, recurse=False):
     """
     Takes path(s) and wildcard(s), yielding the
