@@ -586,7 +586,7 @@ def to_dict_as_records_flatten(lst: list):
         dict: Dictionary with the values of the first col as the key with second as the value (see example)
 
     Examples:
-        >>> d = data.Permissions.df_crn_permissions_status_responded_xlsx.to_dict(orient='records')  # noqa
+        >>> d = df_crn_permissions_status_responded_xlsx().to_dict(orient='records')  # noqa
         >>> print(d)
         [{'crn': 'A0012017', 'permission': 'Not Given'}, {'crn': 'A0011574', 'permission': 'Given'}, ...]\n
         >>> to_dict_as_records_flatten(d)
