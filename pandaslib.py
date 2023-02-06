@@ -40,7 +40,8 @@ class GroupBy:
         groupflds: iterable list of fields to aggregate by
         valuefls: list of value fields with the data to summarise
         *funcs: list of aggregate functions
-        **kwargs: Accepts flatten (bool) and col_names_out (tuple,iter) for flattening and renaming the outputed dataframe respectively
+        **kwargs: Accepts flatten (bool) and col_names_out (tuple,iter) for
+        flattening and renaming the outputed dataframe respectively
 
     Notes:
         Funcs can be custom static functions (e.g. static members
