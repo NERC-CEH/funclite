@@ -62,7 +62,7 @@ class GroupBy:
     PRECISION = 2
     ALPHA = 95  # percentages, 95 is a 0.05 alpha - it is this was so that the final df output col headings are ok
 
-    numpy = _np # for convienance to easily specify aggregate funcs
+    numpy = _np  # for convienance to easily specify aggregate funcs
 
     def __init__(self, df, groupflds, valueflds, *funcs, **kwargs):
         self.df = df
@@ -406,7 +406,7 @@ def df_to_dict_keycol_multivalues(df: _pd.DataFrame, key_col: str, val_col: str)
         dict: Diction where keys are unique values in df[key_col], and key values are a list of all values where lookup matches the key col (see example)
 
     Examples:
-        >>> df = pd.DataFrame({'permission': ['Given', 'Not Given', 'Not Given', 'Not Given'], 'plotid':[1,2,3,4]})
+        >>> df = _pd.DataFrame({'permission': ['Given', 'Not Given', 'Not Given', 'Not Given'], 'plotid':[1,2,3,4]})
         >>> df
           permission  plotid
         0      Given       1
@@ -415,7 +415,7 @@ def df_to_dict_keycol_multivalues(df: _pd.DataFrame, key_col: str, val_col: str)
         3  Not Given       4\n\n
 
         >>> df_to_dict_keycol_multivalues(df, 'permission', 'plotid')
-        {'Given': [1], 'Not Given': [1, 2, 3]}
+        {'Given': [1], 'Not Given': [2, 3, 4]}
     """
     keys = df['key_col'].to_list()
     vals = df['val_col'].to_list()
@@ -423,6 +423,7 @@ def df_to_dict_keycol_multivalues(df: _pd.DataFrame, key_col: str, val_col: str)
     for i, k in enumerate(keys):
         dct[k].append(vals[i])
     return dct
+
 
 def col_exists(df, col_name):
     """(str)->bool
@@ -454,8 +455,7 @@ def readfld(v, default=None):
     return default if _pd.isnull(v) else v
 
 
-
-def cols_delete_not_in(df: _pd.DataFrame, keep_list: list ):
+def cols_delete_not_in(df: _pd.DataFrame, keep_list: list):
     """
     Delete columns not in keep_list
 
@@ -465,6 +465,8 @@ def cols_delete_not_in(df: _pd.DataFrame, keep_list: list ):
 
     Returns: None
     """
+
+
 # endregion
 
 
@@ -507,14 +509,16 @@ def df_replace_welsh(df):
     """
     df = df.replace('')
 
+
 def df_from_dict(d):
     """(dict) -> pandas.dataframe
     Build a datafrom from a dict. Keys are col headings, values are entries.
     Supports unequal length values, and values in (set, list, tuple)
-    
-    d: dictionary
 
-    Example:
+    Args:
+        d: dictionary
+
+    Examples:
     >>>df_from_dict({'a':[1], 'b':[1,2]})
         a   b
     0   1   1
@@ -572,13 +576,11 @@ def pandas_join(from_: _pd.DataFrame, to_: _pd.DataFrame, from_key: str, to_key:
     return join
 
 
-def to_dict_as_records_flatten(lst: list):
+def df_to_dict_as_records_flatten(lst: list) -> dict:
     """
     Takes a two column dataframe, exported to_dict
     as records and outputs as a dict of
     key-value pairs.
-
-    Useful for arcapi.data.field_update_from_dict
 
     Args:
         lst (list): A list of dicts, where each dict is a single "row",\ne.g. [{'crn': 'A0012017', 'permission': 'Not Given'}, {'crn': 'A0011574', 'permission': 'Given'}, ...]
@@ -586,11 +588,15 @@ def to_dict_as_records_flatten(lst: list):
     Returns:
         dict: Dictionary with the values of the first col as the key with second as the value (see example)
 
+    Notes:
+        Also see df_to_dict_as_records_flatten, which takes a dataframe and converts it to correctly formatted dict.
+        Useful for arcapi.data.field_update_from_dict.
+
     Examples:
         >>> d = df_crn_permissions_status_responded_xlsx().to_dict(orient='records')  # noqa
         >>> print(d)
         [{'crn': 'A0012017', 'permission': 'Not Given'}, {'crn': 'A0011574', 'permission': 'Given'}, ...]\n
-        >>> to_dict_as_records_flatten(d)
+        >>> df_to_dict_as_records_flatten(d)
         {'A0012017': 'Not Given', 'A0011574': 'Given' ....}
     """
     dd = dict()
@@ -598,6 +604,47 @@ def to_dict_as_records_flatten(lst: list):
         lst_items = list(d.items())
         dd[lst_items[0][1]] = lst_items[1][1]
     return dd
+
+
+def df_to_dict_as_records_flatten1(df: _pd.DataFrame, cols: (list[str], None) = None) -> dict:
+    """
+    Takes a two column dataframe, converts to exported to_dict
+    as records and outputs as a dict of
+    key-value pairs.
+
+    Args:
+        df (pandas.DataFrame): A dataframe in standard format
+        cols (list[str], None): A 2n list of columns to get key/value pairs from. If None, takes first two columns, with first col as the key col
+
+    Raises:
+        ValueError: If len(cols) != 2
+
+    Returns:
+        dict: Dictionary with the values of the first col as the key with second as the value (see example)
+
+    Notes:
+        See also df_to_dict_as_records_flatten, which this is a small wrapper around.
+        Useful for arcapi.data.field_update_from_dict
+
+    Examples:
+        >>> df = _pd.DataFrame({'col1':['a','b','c'], 'col2':[1,2,3], 'col3':[10,20,30]})  # noqa
+
+        Passing cols
+        >>> df_to_dict_as_records_flatten1(df, ['col1', 'col3'])
+        {'a':10, 'b':20, 'c':30}
+
+        Do not pass cols, defaults to first two cols in dataframe
+        >>> df_to_dict_as_records_flatten1(df)
+        {'a':1, 'b':2, 'c':3}
+    """
+    if cols and len(cols) != 2:
+        raise ValueError('The cols list %s should contain two column names' % cols)
+
+    if cols:
+        return df_to_dict_as_records_flatten(df[[cols[0], cols[1]]].to_dict(orient='records'))
+    return df_to_dict_as_records_flatten(df[[df.columns[0], df.columns[1]]].to_dict(orient='records'))
+
+
 
 def excel_table_as_df(workbook: str, worksheet: (str, int), table: (str, int)) -> _pd.DataFrame:
     """
@@ -622,9 +669,6 @@ def excel_table_as_df(workbook: str, worksheet: (str, int), table: (str, int)) -
         df: _pd.DataFrame = rng.expand().options(_pd.DataFrame).value
         df.reset_index(inplace=True)
     return df
-
-
-
 
 
 # ---------------

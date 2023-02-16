@@ -211,7 +211,6 @@ class DictKwarg(dict):
             yield out
 
 
-
 # endregion
 
 
@@ -560,6 +559,7 @@ def lists_merge(first_has_priority=True, *args):
                 d[i] = v
     return d.values()
 
+
 def lists_remove_empty_pairs(list1, list2):
     """(list|tuple, list|tuple) -> list, list, list
        Zip through datasets (pairwise),
@@ -639,15 +639,16 @@ def list_str_in_iter(s: str, iter_: (list, tuple), ignore_case: bool = True) -> 
     Returns:
         bool: True if occurs else False OR if iter_ is empty or None
     """
+
     def _filt(t: str):
         if ignore_case:
             return s.lower() in t.lower()
         else:
             return s in t
+
     if not iter_: return True
     lst = list(filter(_filt, iter_))
     return any(lst)
-
 
 
 def list_from_str(s: str) -> list:
@@ -720,7 +721,7 @@ def list_sym_diff(a: list, b: list, rename_keys: (None, list, tuple) = None) -> 
         if len(rename_keys) > 2:
             d[rename_keys[2]] = d.pop('b_notin_a')
 
-    return  d
+    return d
 
 
 def list_and(lst1, lst2):

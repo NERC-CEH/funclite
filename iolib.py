@@ -1809,6 +1809,23 @@ def file_move(fname: str, tofld: str, delete_on_exists: bool = True) -> None:
     _shutil.move(fname, tofld)
 
 
+def file_modification_date(file_name: str) -> _datetime.datetime:
+    """Get file modification date as a datetime
+
+    """
+    file_name = _path.normpath(file_name)
+    t = _path.getmtime(file_name)
+    return _datetime.datetime.fromtimestamp(t)
+
+def file_creation_date(file_name: str) -> _datetime.datetime:
+    """Get file creation date as a datetime
+
+    """
+    file_name = _path.normpath(file_name)
+    t = _path.getctime(file_name)
+    return _datetime.datetime.fromtimestamp(t)
+
+
 def file_create(file_name, s=''):
     """(str, str) -> void
     Creates file  and write s to it
