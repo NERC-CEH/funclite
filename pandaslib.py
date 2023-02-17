@@ -399,26 +399,27 @@ def df_to_dict_keycol_multivalues(df: _pd.DataFrame, key_col: str, val_col: str)
 
     Args:
         df (pandas.DataFrame): The dataframe
-        key_col: The col to use as keys.
-        val_col:
+        key_col (str): The col to use as keys.
+        val_col (str): The col to use as values
 
     Returns:
         dict: Diction where keys are unique values in df[key_col], and key values are a list of all values where lookup matches the key col (see example)
 
     Examples:
-        >>> df = _pd.DataFrame({'permission': ['Given', 'Not Given', 'Not Given', 'Not Given'], 'plotid':[1,2,3,4]})
-        >>> df
+        >>> dfr = _pd.DataFrame({'permission': ['Given', 'Not Given', 'Not Given', 'Not Given'], 'plotid':[1,2,3,4]})
+        >>> dfr
           permission  plotid
         0      Given       1
         1  Not Given       2
         2  Not Given       3
         3  Not Given       4\n\n
 
-        >>> df_to_dict_keycol_multivalues(df, 'permission', 'plotid')
+        >>> df_to_dict_keycol_multivalues(dfr, 'permission', 'plotid')
         {'Given': [1], 'Not Given': [2, 3, 4]}
     """
-    keys = df['key_col'].to_list()
-    vals = df['val_col'].to_list()
+    # TODO: test/debug df_to_dict_keycol_multivalues
+    keys = df[key_col].to_list()
+    vals = df[val_col].to_list()
     dct = {k: [] for k in set(keys)}
     for i, k in enumerate(keys):
         dct[k].append(vals[i])
@@ -455,17 +456,6 @@ def readfld(v, default=None):
     return default if _pd.isnull(v) else v
 
 
-def cols_delete_not_in(df: _pd.DataFrame, keep_list: list):
-    """
-    Delete columns not in keep_list
-
-    Args:
-        df: The dataframe
-        keep_list (list): The list with cols to keep
-
-    Returns: None
-    """
-
 
 # endregion
 
@@ -496,18 +486,6 @@ def df_fromstring(str_, sep=',', header=0, names=None, **args):  # noqa
     # df = _pd.read_csv(_StringIO(str_), sep=sep, header=header, names=names, engine='python', **args)
     # return df
     raise NotImplementedError
-
-
-def df_replace_welsh(df):
-    """
-    Replace _common welsh unicode with ascii
-    Args:
-        df: dataframe
-
-    Returns:
-        dataframe
-    """
-    df = df.replace('')
 
 
 def df_from_dict(d):

@@ -7,6 +7,7 @@ for manipulatin other base classes.
 
 Stick list/tuple/dic functions in here.
 """
+from datetime import timedelta as _timedelta
 import inspect as _inspect
 import itertools as _itertools
 import pickle as _pickle
@@ -209,6 +210,79 @@ class DictKwarg(dict):
             for k in self.keys():
                 out[k] = self[k][i]
             yield out
+
+
+class TimeDelta(_timedelta):
+    """ Subclasses datetime.timedelta, adding several methods
+    to get total time diff in mins, hours or seconds.
+    Also supports friend print.
+
+    Methods:
+        __str__: Overridden __str__ class, with friendly time print
+        as_mins: Time diff in mins
+        as_hours: Time diff in hours
+        as_seconds: Time diff in seconds
+
+    Examples:
+        Get time in hours between now and the last modification date of a file
+        >>> TimeDelta(datetime.now() - iolib.file_modification_date('C:/my.xlsx')).as_hours  # noqa
+        1.1234
+
+    Credit:
+        Partial credit to https://stackoverflow.com/a/61883517/5585800
+    """
+    def __str__(self):
+        _times = super(TimeDelta, self).__str__().split(':')
+        if "," in _times[0]:
+            _hour = int(_times[0].split(',')[-1].strip())
+            if _hour:
+                _times[0] += " hours" if _hour > 1 else " hour"
+            else:
+                _times[0] = _times[0].split(',')[0]
+        else:
+            _hour = int(_times[0].strip())
+            if _hour:
+                _times[0] += " hours" if _hour > 1 else " hour"
+            else:
+                _times[0] = ""
+        _min = int(_times[1])
+        if _min:
+            _times[1] += " minutes" if _min > 1 else " minute"
+        else:
+            _times[1] = ""
+        _sec = int(_times[2])
+        if _sec:
+            _times[2] += " seconds" if _sec > 1 else " second"
+        else:
+            _times[2] = ""
+        return ", ".join([i for i in _times if i]).strip(" ,").title()
+
+    @property
+    def as_mins(self) -> float:
+        """Difference in minutes
+
+        Returns:
+            float: Diff in minutes
+        """
+        return self.as_seconds/60
+
+    @property
+    def as_hours(self) -> float:
+        """
+        Diff in hours
+
+        Returns:
+            float: diff in hours
+        """
+        return self.as_mins/60
+
+    @property
+    def as_seconds(self) -> float:
+        """Diff in seconds
+        Returns:
+            float: Diff in seconds
+        """
+        return self.seconds + self.microseconds + self.days * 86400
 
 
 # endregion
@@ -624,6 +698,8 @@ def list_member_in_str(s: str, match: (str, tuple, list), ignore_case: bool = Fa
             m = m.lower()
         if m in s: return True
     return False
+
+
 
 
 # also in stringslib
