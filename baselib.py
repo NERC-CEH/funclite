@@ -51,28 +51,28 @@ class classproperty(property):
 # CLASSES#
 #########
 
-class _switch:
-    """From http://code.activestate.com/recipes/410692/. Replicates the C switch statement
-    e.g.
-    v = 'ten'
-    for case in switch(v):
-        if case('one'):
-            print 1
-            break
-        if case('two'):
-            print 2
-            break
-        if case('ten'):
-            print 10
-            break
-        if case('eleven'):
-            print 11
-            break
-        if case(): # default, could also just omit condition or 'if True'
-            print "something else!"
-            # No need to break here, it'll stop anyway
-    """
+class Switch:
+    """ Replicates the C switch statement
 
+    if case(): # default, could also just omit condition or 'if True'
+        print "something else!"
+
+    Credit:
+        http://code.activestate.com/recipes/410692/.
+
+    Examples:
+        >>> v = 'ten'
+        >>> for case in Switch(v):
+        >>>     if case('one'):
+        >>>         print 1
+        >>>     if case('two'):
+        >>>         print 2
+        >>>     if case('ten'):
+        >>>         print 10
+        >>>     if case('eleven'):
+        >>>         print 11
+        10
+    """
     def __init__(self, value):
         self.value = value
         self.fall = False
@@ -111,6 +111,8 @@ class odict(_collections.OrderedDict):
         items = list(self.items())
         return items[ind]
 
+# For convieniance, and dont want to break compatibility by renaming odict
+DictOrdered = odict
 
 class dictp(dict):
     """allow values to be accessed with partial key match
@@ -145,19 +147,23 @@ class dictp(dict):
 
         return d
 
+# For convieniance, and dont want to break compatibility by renaming dictp
+DictPartialKeyMatches = dictp
 
 class DictList(dict):
-    """support having a key with a list of values,
+    """Support having a key with a list of values,
     effectively emulating a ditionary with non-unique keys
-    >>> d = DictList()
-    >>> d['test'] = 1
-    >>> d['test'] = 2
-    >>> d['test'] = 3
-    >>> d
-    {'test': [1, 2, 3]}
-    >>> d['other'] = 100
-    >>> d
-    {'test': [1, 2, 3], 'other': [100]}
+
+    Examples:
+        >>> d = DictList()
+        >>> d['test'] = 1
+        >>> d['test'] = 2
+        >>> d['test'] = 3
+        >>> d
+        {'test': [1, 2, 3]}
+        >>> d['other'] = 100
+        >>> d
+        {'test': [1, 2, 3], 'other': [100]}
     """
 
     def __setitem__(self, key, value):
