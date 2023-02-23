@@ -174,6 +174,37 @@ class DictList(dict):
         self[key].append(value)
 
 
+    def keys_from_item(self, v) -> (list, None):
+        """
+        Get the key(s) that contains the value v
+
+        Args:
+            v : A value, expected to be in some subset of dictionary values
+
+        Returns:
+            None: v not in any of the dict values
+            list: List of keys
+
+        Examples:
+            >>> DL = DictList({'a':[1,2,3], 'b':[1,10], 'c':[100,120]})
+            >>> DL.get_key(1)
+            ['a', 'b']
+
+            >>> DL.get_key(100)
+            ['c']
+
+            >>> DL.get_key(-10)
+            None
+        """
+        out = list()
+        for k, vv in self.items():
+            if v in list_flatten(vv):
+                out += [k]
+        if out:
+            return out  # noqa
+        return None
+
+
 class DictKwarg(dict):
     """Dictionary wrapper adding the method kwargs.
 
