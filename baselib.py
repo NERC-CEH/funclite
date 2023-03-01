@@ -22,6 +22,7 @@ import numpy as _np
 import funclite.iolib as _iolib
 
 
+# region enums
 class eDictMatch(_Enum):
     """do dictionaries match
     """
@@ -30,9 +31,9 @@ class eDictMatch(_Enum):
     Superset = 2  # dic is a superset of the other
     Intersects = 3  # some elements match
     Disjoint = 4  # No match
+# endregion
 
-
-# Decorators
+# region Decorators
 class classproperty(property):
     """class prop decorator, used
     to enable class level properties"""
@@ -45,12 +46,10 @@ class classproperty(property):
 
     def __delete__(self, obj):
         super(classproperty, self).__delete__(type(obj))
+# endregion
 
 
-#########
-# CLASSES#
-#########
-
+# region CLASSES
 class Switch:
     """ Replicates the C switch statement
 
@@ -94,7 +93,6 @@ class Switch:
         return False
 
 
-# region dict
 
 # region dict classes
 class odict(_collections.OrderedDict):
@@ -150,61 +148,6 @@ class dictp(dict):
 # For convieniance, and dont want to break compatibility by renaming dictp
 DictPartialKeyMatches = dictp
 
-class DictList(dict):
-    """Support having a key with a list of values,
-    effectively emulating a ditionary with non-unique keys
-
-    Examples:
-        >>> d = DictList()
-        >>> d['test'] = 1
-        >>> d['test'] = 2
-        >>> d['test'] = 3
-        >>> d
-        {'test': [1, 2, 3]}
-        >>> d['other'] = 100
-        >>> d
-        {'test': [1, 2, 3], 'other': [100]}
-    """
-
-    def __setitem__(self, key, value):
-        try:
-            self[key]
-        except KeyError:
-            super(DictList, self).__setitem__(key, [])
-        self[key].append(value)
-
-
-    def keys_from_item(self, v) -> (list, None):
-        """
-        Get the key(s) that contains the value v
-
-        Args:
-            v : A value, expected to be in some subset of dictionary values
-
-        Returns:
-            None: v not in any of the dict values
-            list: List of keys
-
-        Examples:
-            >>> DL = DictList({'a':[1,2,3], 'b':[1,10], 'c':[100,120]})
-            >>> DL.get_key(1)
-            ['a', 'b']
-
-            >>> DL.get_key(100)
-            ['c']
-
-            >>> DL.get_key(-10)
-            None
-        """
-        out = list()
-        for k, vv in self.items():
-            if v in list_flatten(vv):
-                out += [k]
-        if out:
-            return out  # noqa
-        return None
-
-
 class DictKwarg(dict):
     """Dictionary wrapper adding the method kwargs.
 
@@ -216,7 +159,7 @@ class DictKwarg(dict):
 
     Examples:
         Yield args as kword like dict
-        >>> dK = DictKwarg({'age': [12,20], 'hair': ['bald', 'blonde']})
+        >>> dK = DictKwarg({'age': [75, 20], 'hair': ['bald', 'blonde']})
         >>> for d in dK.kwargs():
         >>>     print(d)
         {'age':12, 'hair':'bald'}
@@ -247,6 +190,75 @@ class DictKwarg(dict):
             for k in self.keys():
                 out[k] = self[k][i]
             yield out
+
+
+class DictList(dict, DictKwarg):
+    """Easy support for dictionary values as lists.
+
+    Methods:
+        keys_from_item: Get a list of all keys where the dictionary values (which are lists) contain a specified value
+        kwargs (dict): Yields keword arguments constructed from the key values (lists) on a 'row like' basis
+
+    Notes:
+         kwargs method is supported by inheriting from DictKwarg.
+
+    Examples:
+        >>> d = DictList()
+        >>> d['test'] = 1
+        >>> d['test'] = 2
+        >>> d['test'] = 3
+        >>> d
+        {'test': [1, 2, 3]}
+        >>> d['other'] = 100
+        >>> d
+        {'test': [1, 2, 3], 'other': [100]}
+
+        Yield args as kword like dict
+        >>> dK = DictList({'age': [75, 20], 'hair': ['bald', 'blonde']})
+        >>> for d in dK.kwargs():
+        >>>     print(d)
+        {'age':12, 'hair':'bald'}
+        {'age':20, 'hair':'blonde'}
+    """
+
+    def __setitem__(self, key, value):
+        try:
+            self[key]
+        except KeyError:
+            super(DictList, self).__setitem__(key, [])
+        self[key].append(value)
+
+
+    def keys_from_item(self, v) -> (list, None):
+        """
+        Get the key(s) that contains the value v
+
+        Args:
+            v : A value, expected to be in some subset of dictionary values
+
+        Returns:
+            None: v not in any of the dict values
+            list: List of keys
+
+        Examples:
+            >>> DL = DictList({'a':[1,2,3], 'b':[1,10], 'c':[100,120]})
+            >>> DL.keys_from_item(1)
+            ['a', 'b']
+
+            >>> DL.keys_from_item(100)
+            ['c']
+
+            >>> DL.keys_from_item(-10)
+            None
+        """
+        out = list()
+        for k, vv in self.items():
+            if v in list_flatten(vv):
+                out += [k]
+        if out:
+            return out  # noqa
+        return None
+
 
 
 class TimeDelta(_timedelta):
@@ -320,9 +332,9 @@ class TimeDelta(_timedelta):
             float: Diff in seconds
         """
         return self.seconds + self.microseconds + self.days * 86400
-
-
 # endregion
+
+
 
 
 def dic_merge_two(x_, y):
