@@ -192,7 +192,7 @@ class DictKwarg(dict):
             yield out
 
 
-class DictList(dict, DictKwarg):
+class DictList(DictKwarg):
     """Easy support for dictionary values as lists.
 
     Methods:
