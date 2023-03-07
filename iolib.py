@@ -1692,7 +1692,7 @@ def files_copy(from_: str, tofld: str, delete_=False, showprogress: bool = False
         int: number of files copied
 
     Notes:
-        files_move is quicker for move operations (i.e. passing delete_ = True here)
+        files_move is quicker for move operations (i.e. passing delete_ = True here). Also see files_copy2
 
     Examples:
         >>> files_copy('C:/TEMP/*.*', 'C:/TEMP/SUBDIR')
@@ -1713,6 +1713,54 @@ def files_copy(from_: str, tofld: str, delete_=False, showprogress: bool = False
         if showprogress:
             PP.increment()  # noqa
     return i
+
+
+def files_copy2(from_: str, tofld: str, file_match: (str, list[str], None) = '', delete_: bool = False, showprogress: bool = False) -> int:
+    """
+    Copy files, includes an option to partially match the file name
+
+    Args:
+        from_ (str): Wildcarded path
+        file_match (str, list[str], None): List of string to match against file name (including the extension), e.g. ['.pdf', 'march_images'], would be *.pdf* OR *march_images*
+        tofld (str): Folder tocopy files matching fname to
+        delete_ (bool): Delete, making this a move, not a copy
+        showprogress (bool): Print progress bar to terminal
+
+    Raises:
+        ValueError: If from_ is a directory. It should be a wildcarded path.
+
+    Returns:
+        int: number of files copied
+
+    Notes:
+        files_move is quicker for move operations (i.e. passing delete_ = True here)
+
+    Examples:
+        >>> files_copy2('C:/TEMP/*.*', 'C:/TEMP/SUBDIR', file_match= ['.pdf', 'march_images'])
+        15
+    """
+    from_ = _path.normpath(from_)
+    tofld = _path.normpath(tofld)
+    if folder_exists(from_):
+        raise ValueError('Looks like you passed a bare directory. You need to pass a wildcarded argument for from_, e.g. C:/temp/*.*')
+    if isinstance(file_match, str): file_match = [file_match]
+    i = 0
+
+    if showprogress:
+        PP = PrintProgress(iter_=_glob.glob(from_))
+
+    for f in _glob.glob(from_):
+        if _baselib.list_member_in_str(get_file_parts2(f)[1], map(str, file_match), ignore_case=True):
+            _shutil.copy2(f, tofld)
+
+            if delete_:
+                with _fuckit:
+                    _os.unlink(f)
+            i += 1
+        if showprogress:
+            PP.increment()  # noqa
+    return i
+
 
 
 def files_move(from_: str, tofld: str, delete_on_exists: bool = True, showprogress: bool = False) -> int:
@@ -1740,7 +1788,7 @@ def files_move(from_: str, tofld: str, delete_on_exists: bool = True, showprogre
     i = 0
 
     if showprogress:
-        PP = PrintProgress(iter_=_glob.glob(from_))
+        PP = PrintProgress(iter_=_glob.glob(from_), init_msg='Moving files to %s' % tofld)
     for f in _glob.glob(from_):
         if delete_on_exists:
             file_delete(fixp(tofld, get_file_parts2(f)[1]))
@@ -2186,4 +2234,8 @@ class Info:
 
 if __name__ == '__main__':
     # Quick debugging here
-    file_count(r'\\nerctbctdb\shared\shared\PROJECTS\WG ERAMMP2 (06810)\2 Field Survey\Data Management\submission\2 images\freshwater\features', wildcards='*', directory_match='2021', recurse=True)
+    # file_count(r'\\nerctbctdb\shared\shared\PROJECTS\WG ERAMMP2 (06810)\2 Field Survey\Data Management\submission\2 images\freshwater\features', wildcards='*', directory_match='2021', recurse=True)
+    files_copy2(r'S:\SPECIAL-ACL\ERAMMP2 Survey Restricted\current\permissions\reports\permission_status_internal\maps\*.pdf',
+                      r'S:\SPECIAL-ACL\ERAMMP2 Survey Restricted\current\permissions\reports\permission_status_internal\maps\2023-03-03 BTO',
+                      ['10170', '10498', '10699', '10886', '10987', '11385', '11501', '12069', '12768', '13404', '13539', '13710', '13956', '1416', '14342', '14596', '14668', '14748', '14776', '16909', '17795', '18183', '18367', '21354', '21582', '22414', '22419', '22818', '23068', '23269', '23677', '23843', '25526', '28255', '30418', '32100', '3330', '33332', '33347', '33361', '35246', '36044', '38172', '38410', '39662', '41284', '41733', '42519', '42523', '42568', '42767', '43775', '45056', '45096', '4579', '46504', '47341', '5223', '6014', '6489', '6497', '6503', '6857', '7403', '8081', '8881', '9784', '9802', '9919']
+                      , showprogress=True)

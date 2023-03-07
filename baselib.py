@@ -738,7 +738,7 @@ def list_member_in_str(s: str, match: (str, tuple, list), ignore_case: bool = Fa
     """
     s = str(s)  # let it work with floats & ints
     if not match: return True  # everything is a match if we have nothing to match to
-    if not isinstance(match, (list, tuple, set)):
+    if not isinstance(match, (list, tuple, set, map)):
         return str(match) in s
     if ignore_case: s = s.lower()
     for m in match:

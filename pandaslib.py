@@ -8,7 +8,7 @@ from copy import deepcopy as _deepcopy
 import statsmodels.stats.api as _sms
 import pandas as _pd
 # from pandas.compat import StringIO as _StringIO
-import numpy as _np
+import numpy as np
 
 try:
     import xlwings as _xlwings
@@ -40,29 +40,28 @@ class GroupBy:
         groupflds: iterable list of fields to aggregate by
         valuefls: list of value fields with the data to summarise
         *funcs: list of aggregate functions
-        **kwargs: Accepts flatten (bool) and col_names_out (tuple,iter) for
-        flattening and renaming the outputed dataframe respectively
+        **kwargs: Accepts flatten (bool) and col_names_out (tuple,iter) for flattening and renaming the outputed dataframe respectively. col_names_out simply matches by index.
 
     Notes:
-        Funcs can be custom static functions (e.g. static members
-        of this class, or other scipy or numpy functions)
-        The numpy library is exposed via GroupyBy.numpy for easy function access
+        Funcs can be custom static functions (e.g. static members of this class, or other scipy or numpy functions). The numpy library is exposed via GroupyBy.numpy for easy function access
 
 
     Examples:
-        >>> from funclite.pandaslib import GroupBy
-        >>> import numpy as np
         >>> df = <LOAD A DATA FRAME>  # noqa
         >>> GroupBy.PRECISION = 1
-        >>> GB = GroupBy(df, ['fish', 'sex'], ['length', 'weight'], np.mean, np.median, GroupBy.fCI(95), GroupBy.fPercentile(25), flatten=True)
-        >>> GB.to_excel('C:\temp\tmp.xlsx', fail_if_exists=False)
+        >>> GB = GroupBy(df, ['fish', 'sex'], ['length', 'weight'], np.mean, np.median, GroupBy.fCI(95), GroupBy.fPercentile(25), flatten=True)  # noqa
+        >>> GB.to_excel('C:\temp\tmp.xlsx', fail_if_exists=False)  # noqa
 
+        Using col_names_out and flatten
+        >>> GroupBy(df, ['country', 'region'], ['population'], GroupBy.numpy.sum, flatten=True, col_names_out=('country', 'region', 'population')).result  # noqa
+        country     region      population
+        UK          Midlands    10000000
     """
 
     PRECISION = 2
     ALPHA = 95  # percentages, 95 is a 0.05 alpha - it is this was so that the final df output col headings are ok
 
-    numpy = _np  # for convienance to easily specify aggregate funcs
+    numpy = np  # for convienance to easily specify aggregate funcs
 
     def __init__(self, df, groupflds, valueflds, *funcs, **kwargs):
         self.df = df
@@ -119,7 +118,7 @@ class GroupBy:
     @staticmethod
     def fPercentile(n):
         def percentile_(data):
-            return _np.percentile(data, n)
+            return np.percentile(data, n)
 
         percentile_.__name__ = 'percentile_%s' % n
         return percentile_
@@ -134,7 +133,7 @@ class GroupBy:
         """
 
         def mse_(data):
-            ndpred = _np.zeros(data.shape[0]) + pred
+            ndpred = np.zeros(data.shape[0]) + pred
             return _mean_squared_error(ndpred, data)
 
         mse_.__name__ = 'mse_%s' % pred
@@ -150,7 +149,7 @@ class GroupBy:
         """
 
         def rmse_(data):
-            ndpred = _np.zeros(data.shape[0]) + pred
+            ndpred = np.zeros(data.shape[0]) + pred
             x = _mean_squared_error(ndpred, data) ** 0.5
             return x
 
@@ -190,7 +189,7 @@ class GroupBy:
 
         def CI_str_(data):
             l, _ = _sms.DescrStatsW(data).tconfint_mean((100 - interval) * 0.01)
-            m = _np.mean(data)
+            m = np.mean(data)
             s = 'M=%s %s%% CIs [%s, %s]' % (_std_notation(m, GroupBy.PRECISION), interval, _std_notation(l, GroupBy.PRECISION), _std_notation(u, GroupBy.PRECISION))  # noqa
             # return m, m-h, m+h
             return s
@@ -200,13 +199,13 @@ class GroupBy:
 
     @staticmethod
     def n(data):
-        d = _np.array(data)
-        return _np.count_nonzero(d)
+        d = np.array(data)
+        return np.count_nonzero(d)
 
     @staticmethod
     def fMeanSD_str(data):
-        d = _np.array(data)
-        m, sd = _np.mean(d), _np.std(d)
+        d = np.array(data)
+        m, sd = np.mean(d), np.std(d)
         s = '%s %s%s' % (_std_notation(m, GroupBy.PRECISION), _plus_minus(), _std_notation(sd, GroupBy.PRECISION))
         return s
 
@@ -232,7 +231,7 @@ class GroupBy:
             nonlocal last
             n = group_N[last]  # the population nr
             last += 1
-            d = _np.array(data)
+            d = np.array(data)
             m, se, ciabs, ci_lower, ci_upper = _statslib.finite_population_stats(d, n, interval, two_tailed)
             return ci_upper
 
@@ -261,7 +260,7 @@ class GroupBy:
             interval = (100 - GroupBy.ALPHA) * 0.01  # pass interval as 95 so cols have nice names
             n = group_N[last]  # the population nr
             last += 1
-            d = _np.array(data)
+            d = np.array(data)
             m, se, ciabs, ci_lower, ci_upper = _statslib.finite_population_stats(d, n, interval, two_tailed)
             return ci_lower
 
@@ -290,7 +289,7 @@ class GroupBy:
             interval = (100 - GroupBy.ALPHA) * 0.01  # pass interval as 95 so cols have nice names
             n = group_N[last]  # the population nr
             last += 1
-            d = _np.array(data)
+            d = np.array(data)
             m, se, ciabs, ci_lower, ci_upper = _statslib.finite_population_stats(d, n, interval, two_tailed)
             return ci_lower
 
@@ -340,7 +339,7 @@ def col_append_rand_fill(df, col_name, lower=0, upper=1):
     df is BYREF
     adds a column to dataframe filling it with random values from a standard normal
     """
-    df[col_name] = _np.random.choice(range(lower, upper), df.shape[0])
+    df[col_name] = np.random.choice(range(lower, upper), df.shape[0])
 
 
 def col_calculate_new(df, func, new_col_name, *args, progress_init_msg='\n'):
@@ -382,7 +381,7 @@ def col_calculate_new(df, func, new_col_name, *args, progress_init_msg='\n'):
         for x in args:
             if row[x] is None:
                 vv = None
-            elif _np.isnan(row[x]):
+            elif np.isnan(row[x]):
                 vv = None
             else:
                 vv = row[x]
