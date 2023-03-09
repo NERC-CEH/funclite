@@ -5,6 +5,7 @@ from warnings import warn
 import os.path as _path
 from copy import deepcopy as _deepcopy
 
+import pandas as pd
 import statsmodels.stats.api as _sms
 import pandas as _pd
 # from pandas.compat import StringIO as _StringIO
@@ -487,6 +488,27 @@ def df_fromstring(str_, sep=',', header=0, names=None, **args):  # noqa
     raise NotImplementedError
 
 
+def df_flatten_cols(df: _pd.DataFrame, inplace: bool = True) -> (None, _pd.DataFrame):
+    """
+    Try and flatten multiindex cols to single list of cols.
+
+    Args:
+        df (_pd.DataFrame): Pandas DF to flatten
+        inplace (bool): Alter df, otherwise return an flattened dataframe
+
+    Returns:
+        _pd.DataFrame: IF inplace is false
+        None: If inplace is True, df is altered
+    """
+    if inplace:
+        df.columns = df.columns.to_flat_index().str.join('_')
+        df.reset_index(inplace=True)
+    else:
+        ddf = df.copy()
+        ddf.columns = ddf.columns.to_flat_index().str.join('_')
+        ddf.reset_index(inplace=True)
+        return ddf
+
 def df_from_dict(d):
     """(dict) -> pandas.dataframe
     Build a datafrom from a dict. Keys are col headings, values are entries.
@@ -621,6 +643,49 @@ def df_to_dict_as_records_flatten1(df: _pd.DataFrame, cols: (list[str], None) = 
         return df_to_dict_as_records_flatten(df[[cols[0], cols[1]]].to_dict(orient='records'))
     return df_to_dict_as_records_flatten(df[[df.columns[0], df.columns[1]]].to_dict(orient='records'))
 
+
+def dfs_to_excel(dfs: list[pd.DataFrame], save_to: str, sheet_names: (None, list[str]) = None, overwrite: bool = True, show_progress: bool = False, **kwargs) -> None:
+    """
+
+    Args:
+        dfs (list[pd.DataFrame]): Dataframes to export to save_to
+        save_to (str): Filename to export dfs to
+        sheet_names (None, list[str]):
+        overwrite (bool): Allow overwrite
+        show_progress (bool): Show progress
+        kwargs: passed to each to_excel call on each df
+
+    Raises:
+        FileExistsError: If the file exists and overwrite was False
+        ValueError: If sheet_names was not None and number of sheet_names was different from number of dataframes
+
+    Returns:
+        None
+
+    Examples:
+        Export a dataframe to 3 worksheets, and specify index and startrow kwargs to pass to DataFrame.to_excel
+        >>> df = pd.DataFrame({1:[1,2,3], 2:[2,3,4]}
+        >>> dfs_to_excel([df, df, df], 'C:/temp/my.xlsx', ['df1', 'df2', 'df3'], index=False, startrow=1)
+    """
+    save_to = _path.normpath(save_to)
+    if not sheet_names:
+        sheet_names = ['Sheet%s' % s for s in range(1, len(dfs)+1)]
+    else:
+        if len(dfs) != len(sheet_names):
+            raise ValueError('If you pass sheet_names, then the number of names must be the same as the number of dataframes')
+
+    if not overwrite and _iolib.file_exists(save_to):
+        raise FileExistsError('File %s already exists and overwrite was False' % save_to)
+    _iolib.file_delete(save_to)
+
+    if show_progress:
+        PP = _iolib.PrintProgress(maximum=len(dfs), init_msg='Exporting dataframes to excel file %s' % save_to)
+
+    with _pd.ExcelWriter(save_to) as EW:
+        for i, sheet in enumerate(sheet_names):
+            dfs[i].to_excel(EW, sheet_name=sheet, **kwargs)
+            if show_progress:
+                PP.increment()  # noqa
 
 
 def excel_table_as_df(workbook: str, worksheet: (str, int), table: (str, int)) -> _pd.DataFrame:
