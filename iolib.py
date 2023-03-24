@@ -7,6 +7,7 @@ from __future__ import print_function as _print_function
 from warnings import warn as _warn
 from enum import Enum as _Enum
 import inspect as _inspect
+import stat as _stat
 
 import os as _os
 import os.path as _path
@@ -1146,7 +1147,6 @@ def file_list_generator2(paths: (str, list, tuple), wildcards: (str, list, tuple
             found = _baselib.list_member_in_str(s, find)
         return found
 
-
     if isinstance(paths, str):
         paths = [paths]
 
@@ -1762,7 +1762,6 @@ def files_copy2(from_: str, tofld: str, file_match: (str, list[str], None) = '',
     return i
 
 
-
 def files_move(from_: str, tofld: str, delete_on_exists: bool = True, showprogress: bool = False) -> int:
     """
     Copy files matching from
@@ -1865,6 +1864,7 @@ def file_modification_date(file_name: str) -> _datetime.datetime:
     t = _path.getmtime(file_name)
     return _datetime.datetime.fromtimestamp(t)
 
+
 def file_creation_date(file_name: str) -> _datetime.datetime:
     """Get file creation date as a datetime
 
@@ -1902,6 +1902,60 @@ def file_exists(file_name):
         return _path.isfile(fixp(file_name))
 
     return False
+
+
+def file_read_write_toggle(fname: str, set_read_only: bool):
+    """
+    Toggle file to read only or write. Does not raise an error.
+
+    Args:
+        fname (str): file
+        set_read_only (bool): Read only status
+
+    Returns: None
+    """
+    with _fuckit:  # if this fails, not end of world .. ignore error and leave it to the caller to raise/capture the error
+        if set_read_only:
+            _os.chmod(fname, _stat.S_IREAD)
+        else:
+            _os.chmod(fname, _stat.S_IWRITE)
+
+
+
+def file_size(file_name: str, units: str = 'bytes') -> float:
+    """
+    Get size of a file
+
+    Args:
+        file_name (str): The file name. Is normpathed
+        units (str): Supports 'bt|bits', 'b|bytes', 'kb|kilobytes', 'gb|gigabytes', 'mb|megabytes', 'tb|terabytes'
+
+    Returns:
+        float: The file size in specified units
+
+    Notes:
+        Defaults to bytes id units is invalid
+
+    Examples:
+        >>> file_size('myfile.txt')
+        1024
+        >>> file_size('myfile.txt', 'kb')
+        1
+    """
+    factor = 1
+    sz = _os.stat(_path.normpath(file_name)).st_size
+    units = units.lower()
+    if units in ['kb', 'kilobytes']:
+        factor = 1024
+    elif units in ['mb', 'megabytes']:
+        factor = 1024 * 1024
+    elif units in ['gb', 'gigabytes']:
+        factor = 1024 * 1024 * 1024
+    elif units in ['tb', 'terabytes']:
+        factor = 1024 * 1024 * 1024 * 1024
+    elif units in ['bt', 'bits']:
+        factor = 1 / 8
+    return sz / float(factor)
 
 
 def folder_exists(folder_name: str) -> bool:
@@ -2235,7 +2289,4 @@ class Info:
 if __name__ == '__main__':
     # Quick debugging here
     # file_count(r'\\nerctbctdb\shared\shared\PROJECTS\WG ERAMMP2 (06810)\2 Field Survey\Data Management\submission\2 images\freshwater\features', wildcards='*', directory_match='2021', recurse=True)
-    files_copy2(r'S:\SPECIAL-ACL\ERAMMP2 Survey Restricted\current\permissions\reports\permission_status_internal\maps\*.pdf',
-                      r'S:\SPECIAL-ACL\ERAMMP2 Survey Restricted\current\permissions\reports\permission_status_internal\maps\2023-03-03 BTO',
-                      ['10170', '10498', '10699', '10886', '10987', '11385', '11501', '12069', '12768', '13404', '13539', '13710', '13956', '1416', '14342', '14596', '14668', '14748', '14776', '16909', '17795', '18183', '18367', '21354', '21582', '22414', '22419', '22818', '23068', '23269', '23677', '23843', '25526', '28255', '30418', '32100', '3330', '33332', '33347', '33361', '35246', '36044', '38172', '38410', '39662', '41284', '41733', '42519', '42523', '42568', '42767', '43775', '45056', '45096', '4579', '46504', '47341', '5223', '6014', '6489', '6497', '6503', '6857', '7403', '8081', '8881', '9784', '9802', '9919']
-                      , showprogress=True)
+    pass

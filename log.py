@@ -9,7 +9,7 @@ Example:
     >>> L.log('my message', EnumLogStatus.INFO)
     >>> L.write()
 """
-
+from warnings import warn as _warn
 from os import path as _path
 from enum import Enum as _Enum
 
@@ -23,6 +23,8 @@ class EnumLogStatus(_Enum):
     CRITICAL = 1
     WARNING = 2
     INFO = 3
+
+WARN_SIZE_MB = 1
 
 class Log:
     """
@@ -106,6 +108,8 @@ class Log:
         """Read log from file system if we do not want to overwrite"""
         if not self._overwrite:
             if _iolib.file_exists(self.logfile):
+                if _iolib.file_size(self.logfile, 'mb') > WARN_SIZE_MB:
+                    _warn('Log file %s is greater than 1Mb, consider deleting it.' % self.logfile)
                 self._log = _iolib.readcsv_by_row(self.logfile)
 
 
