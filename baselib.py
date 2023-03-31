@@ -49,7 +49,7 @@ class classproperty(property):
 # endregion
 
 
-# region CLASSES
+# region classes misc
 class Switch:
     """ Replicates the C switch statement
 
@@ -89,10 +89,80 @@ class Switch:
         if self.value in args:  # changed for v1.5, see below
             self.fall = True
             return True
-
         return False
 
+class TimeDelta(_timedelta):
+    """ Subclasses datetime.timedelta, adding several methods
+    to get total time diff in mins, hours or seconds.
+    Also supports friend print.
 
+    Methods:
+        __str__: Overridden __str__ class, with friendly time print
+        as_mins: Time diff in mins
+        as_hours: Time diff in hours
+        as_seconds: Time diff in seconds
+
+    Examples:
+        Get time in hours between now and the last modification date of a file
+        >>> TimeDelta(datetime.now() - iolib.file_modification_date('C:/my.xlsx')).as_hours  # noqa
+        1.1234
+
+    Credit:
+        Partial credit to https://stackoverflow.com/a/61883517/5585800
+    """
+    def __str__(self):
+        _times = super(TimeDelta, self).__str__().split(':')
+        if "," in _times[0]:
+            _hour = int(_times[0].split(',')[-1].strip())
+            if _hour:
+                _times[0] += " hours" if _hour > 1 else " hour"
+            else:
+                _times[0] = _times[0].split(',')[0]
+        else:
+            _hour = int(_times[0].strip())
+            if _hour:
+                _times[0] += " hours" if _hour > 1 else " hour"
+            else:
+                _times[0] = ""
+        _min = int(_times[1])
+        if _min:
+            _times[1] += " minutes" if _min > 1 else " minute"
+        else:
+            _times[1] = ""
+        _sec = int(_times[2])
+        if _sec:
+            _times[2] += " seconds" if _sec > 1 else " second"
+        else:
+            _times[2] = ""
+        return ", ".join([i for i in _times if i]).strip(" ,").title()
+
+    @property
+    def as_mins(self) -> float:
+        """Difference in minutes
+
+        Returns:
+            float: Diff in minutes
+        """
+        return self.as_seconds/60
+
+    @property
+    def as_hours(self) -> float:
+        """
+        Diff in hours
+
+        Returns:
+            float: diff in hours
+        """
+        return self.as_mins/60
+
+    @property
+    def as_seconds(self) -> float:
+        """Diff in seconds
+        Returns:
+            float: Diff in seconds
+        """
+        return self.seconds + self.microseconds + self.days * 86400
+# endregion
 
 # region dict classes
 class odict(_collections.OrderedDict):
@@ -258,83 +328,54 @@ class DictList(DictKwarg):
         if out:
             return out  # noqa
         return None
-
-
-
-class TimeDelta(_timedelta):
-    """ Subclasses datetime.timedelta, adding several methods
-    to get total time diff in mins, hours or seconds.
-    Also supports friend print.
-
-    Methods:
-        __str__: Overridden __str__ class, with friendly time print
-        as_mins: Time diff in mins
-        as_hours: Time diff in hours
-        as_seconds: Time diff in seconds
-
-    Examples:
-        Get time in hours between now and the last modification date of a file
-        >>> TimeDelta(datetime.now() - iolib.file_modification_date('C:/my.xlsx')).as_hours  # noqa
-        1.1234
-
-    Credit:
-        Partial credit to https://stackoverflow.com/a/61883517/5585800
-    """
-    def __str__(self):
-        _times = super(TimeDelta, self).__str__().split(':')
-        if "," in _times[0]:
-            _hour = int(_times[0].split(',')[-1].strip())
-            if _hour:
-                _times[0] += " hours" if _hour > 1 else " hour"
-            else:
-                _times[0] = _times[0].split(',')[0]
-        else:
-            _hour = int(_times[0].strip())
-            if _hour:
-                _times[0] += " hours" if _hour > 1 else " hour"
-            else:
-                _times[0] = ""
-        _min = int(_times[1])
-        if _min:
-            _times[1] += " minutes" if _min > 1 else " minute"
-        else:
-            _times[1] = ""
-        _sec = int(_times[2])
-        if _sec:
-            _times[2] += " seconds" if _sec > 1 else " second"
-        else:
-            _times[2] = ""
-        return ", ".join([i for i in _times if i]).strip(" ,").title()
-
-    @property
-    def as_mins(self) -> float:
-        """Difference in minutes
-
-        Returns:
-            float: Diff in minutes
-        """
-        return self.as_seconds/60
-
-    @property
-    def as_hours(self) -> float:
-        """
-        Diff in hours
-
-        Returns:
-            float: diff in hours
-        """
-        return self.as_mins/60
-
-    @property
-    def as_seconds(self) -> float:
-        """Diff in seconds
-        Returns:
-            float: Diff in seconds
-        """
-        return self.seconds + self.microseconds + self.days * 86400
 # endregion
 
 
+# region dictionaries
+def dic_filter_by_keys(d: dict, keys: (list, tuple)) -> dict:
+    """
+    Filter a dictionary by a list of keys.
+
+    Args:
+        d (dict): Target dict to apply filter
+        keys (list, tuple): iterable of keys to remove from dict
+
+    Returns:
+        dict: the dictionary sans all keys in keys
+
+    Notes:
+        Returns d if "not keys" evaluates to True
+
+    Examples:
+        >>> dic_filter_by_keys({'a':1, 'b':2}, ['a'])
+        {'b':2}
+    """
+    if not keys:
+        return d
+    return {key: d[key] for key in keys}
+
+
+def dic_filter_by_values(d: dict, v: (list, tuple)) -> dict:
+    """
+    Filter a dictionary by a list of its values.
+
+    Args:
+        d (dict): Target dict to apply filter
+        v (list, tuple): iterable of values to remove from dict
+
+    Returns:
+        dict: the dictionary sans all members whose value is in v
+
+    Notes:
+        Returns d if "not v" evaluates to True
+
+    Examples:
+        >>> dic_filter_by_values({'a':1, 'b':2}, [1])
+        {2:2}
+    """
+    if not v:
+        return d
+    return {itm[0]: itm[1] for itm in d if itm[1] in v}
 
 
 def dic_merge_two(x_, y):
@@ -344,16 +385,13 @@ def dic_merge_two(x_, y):
     return z
 
 
-# endregion
-
-
 def dic_key_with_max_val(d):
     """(dict)->value
     Get key with largest value
 
-    Example:
-    >>>dic_key_with_max_val({'a':12, 'b':100, 'x':-1})
-    'b'
+    Examples:
+        >>> dic_key_with_max_val({'a':12, 'b':100, 'x':-1})
+        'b'
     """
     return max(d, key=lambda key: d[key])
 
@@ -416,26 +454,35 @@ def dic_sort_by_key(d):
     return out_
 
 
-def dic_match(a, b):
+def dic_match(a: dict, b: dict) -> ("eDictMatch", None):
     """(dict, dict) -> Enum:eDictMatch
     Compares dictionary a to dictionary b.
 
-    a:
-        Dictionary, compared to b
-    b:
-        Dictionary, which a is compared to
-    Returns:
-        Value from the enum, baselib.eDictMatch
+    Args:
+        a (dict): Dictionary, compared to b
+        b (dict): Dictionary, which a is compared to
 
-    Example:
-        >>>dic_match({'a':1}, {'a':1, 'b':2})
+    Returns:
+        eDictMatch: A member of eDictMatch.
+        None: If a or b were not dicts
+
+    Notes:
+        eDictMatch is defined as follows,
+        Exact = 0  # every element matches in both
+        Subset = 1  # a is a subset of b
+        Superset = 2  # a is a superset b
+        Intersects = 3  # some elements match
+        Disjoint = 4  # No match
+
+    Examples:
+        >>> dic_match({'a':1}, {'a':1, 'b':2})
         eDictMatch.Subset
 
-        >>>dic_match({'a':1, 'b':2}}, {'a':1, 'b':2})
+        >>> dic_match({'a':1, 'b':2}}, {'a':1, 'b':2})
         eDictMatch.Exact
     """
     if not isinstance(a, dict) or not isinstance(a, dict):
-        return None
+        return None  # noqa
 
     unmatched = False
     matched = False
@@ -457,7 +504,7 @@ def dic_match(a, b):
 
         if not unmatched:
             return eDictMatch.Subset
-        return None
+        return None  # noqa
 
     if len(a_lst) > len(b_lst):
         for i in b_lst:
@@ -474,7 +521,7 @@ def dic_match(a, b):
 
         if not unmatched:
             return eDictMatch.Superset
-        return None
+        return None  # noqa
     # same length
     for i in b_lst:
         if i in a_lst:
@@ -490,10 +537,35 @@ def dic_match(a, b):
 
     if not unmatched:
         return eDictMatch.Exact
-    return None
-
+    return None  # noqa
+# endregion
 
 # region lists
+def list_filter_by_list(a: list, filt: list) -> list:
+    """
+    Filter the values in a list which contain substrings in another list.
+
+    Args:
+        a (list): The list to filter
+        filt (list): The list to use to filter values in a
+
+    Returns:
+        list: List a, filtered by wildcard matches of filt[n] in a
+
+    Notes:
+        Is case sensitive.
+        Useful for doing things like filtering file lists by a list of partial matches.
+        Returns a if "not a" evaluates to True
+
+    Examples:
+        >>> list_filter_by_list(['aaa','bbb', 'ccc'], ['a', 'bb'])
+        ['aaa', 'bbb']
+    """
+    if not filt or not a:
+        return a
+    filt = lambda fcs, match: [s for s in fcs if [z for z in match if z in s]]
+    return filt(a, filt)
+
 def list_delete_value_pairs(list_a: list, list_b: list, match_value=0) -> None:
     """(list,list,str|number) -> void
     Given two lists, removes matching values pairs occuring
@@ -642,6 +714,12 @@ def lists_match(a: list, b: list, ignore_case: bool = False) -> bool:
     Notes:
         Considers unique values only, i.e. calls list(set()) on each list
         prior to comparison.
+
+    Examples:
+        >>> lists_match(['a', 'c', 'D'], ['c','d','d','a'], ignore_case=True)
+        True
+        >>> lists_match(['a', 'c', 'D'], ['c','d','d'], ignore_case=True)
+        False
     """
     c = list(set(a))
     d = list(set(b))
