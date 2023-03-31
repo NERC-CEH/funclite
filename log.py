@@ -43,6 +43,8 @@ class Log:
         >>> L._write()  # noqa
     """
     _COL_CNT = 3
+    EnumLogStatus = EnumLogStatus  # noqa
+
 
     def __init__(self, logfile: str, overwrite: bool = True):
         self.logfile = _path.normpath(logfile)
