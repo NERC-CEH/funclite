@@ -12,6 +12,7 @@ import inspect as _inspect
 import itertools as _itertools
 import pickle as _pickle
 import collections as _collections
+
 import sys as _sys
 import operator as _operator
 from copy import deepcopy as _deepcopy
@@ -395,6 +396,20 @@ def dic_key_with_max_val(d):
     """
     return max(d, key=lambda key: d[key])
 
+def dic_value_counts(d: dict) -> dict:
+    """
+
+    Args:
+        d (dict): Get count of values in dict d.
+
+    Returns:
+        dict: {'value1': n1, 'value2': n2, 'value3': n3}
+
+    Examples:
+        >>> dic_value_counts(({'a':'given', 'b':'given', 'c':'bad','d':'good' }))
+        {'given': 2, 'bad': 1, 'good': 1}
+    """
+    return dict(_collections.Counter(d.values()))
 
 def dic_vals_same_len(d) -> bool:
     """
