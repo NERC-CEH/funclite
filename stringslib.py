@@ -23,7 +23,7 @@ ascii_and = ['&', '+']
 ascii_or = ['|']
 
 
-def encode_b64(s: str, on_if_not='') -> str:
+def encode_b64(s: str, on_if_not: str = '') -> str:
     """
     Encode a string to base64
 
@@ -38,7 +38,7 @@ def encode_b64(s: str, on_if_not='') -> str:
         >>> encode_b64('sassadad')
         'c2Fzc2FkYWQ='
         \nNow using if_not
-        >>> encode_b64(None, on_if_not='this_was_none')
+        >>> encode_b64(None, on_if_not='this_was_none')  # noqa
         'this_was_none'
     """
     if not s:
@@ -69,6 +69,18 @@ def non_breaking_space2space(s, replace_with=' '):
 
 
 class Visible:
+    """
+    Single static method returning an ordered dictionary of printable characters
+    The dictionary is ordered by ord(<char>).
+
+    Notes:
+        Superseeded by stringslib.VisibleDict and stringslib.VisibleStrict dictionary global variables.
+        This is left here to not break any old code.
+
+    Examples:
+        >>> Visible.ord_dict()[49],Visible.ord_dict()[97],Visible.ord_dict()[35]
+        '1', 'a', '#'
+    """
     visible_strict_with_space = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ '
     visible_strict_sans_space = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
 
@@ -81,6 +93,10 @@ class Visible:
         s = Visible.visible_strict_with_space if with_space else Visible.visible_strict_sans_space
         dic = {ord(value): value for value in s}
         return dic
+
+# See class Visible, these are easier to use
+VisibleDict = {ord(value): value for value in '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ '}
+VisibleStrict = {ord(value): value for value in '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'}
 
 
 def list_to_readable_str(seq: _List[_Any]) -> str:
@@ -475,7 +491,31 @@ def newline_del_multi(s):
 # endregion
 
 
-# time stuff
+def argparse_args_pretty_print(args: ("argparse.Namespace", str, None)) -> str:  # noqa
+    """
+    Get a pretty string of arguments from an argparse Namespace instance.
+    This is used to extract arguments passed to scripts on the command line to pass
+    Args:
+        args ("argparse.Namespace", str, None): An argparse Namespace instance. This is the object returned by parse_args, which stores all command line arguments
+
+    Returns:
+        str: Pretty printed string of args. Or args itself, if args is a string instance or not args evaluates to True
+
+    Examples:
+        >>> argparse_args_pretty_print('a=1')  # noqa
+        'a=1'
+        >>> argparse_args_pretty_print(None)  # noqa
+        None
+
+        Now imagine args is an instance of argparse.ArgumentParser().parse_args()
+        >>> argparse_args_pretty_print(args)  # noqa
+        'folder:C:/myfolder overwrite:True'
+    """
+    if isinstance(args, str) or not args: return args
+    return ' '.join(['{0}:{1}'.format(k, v) for k, v in sorted(vars(args).items())])
+
+
+# region time
 def time_pretty(seconds):
     """(float) -> str
     Return a prettified time interval
@@ -547,39 +587,59 @@ def pretty_date_now(sep: str = '-', with_time: bool = False, time_sep: str = ':'
     else:
         s = '%Y{}%m{}%d'.format(sep, sep)
     return _time.strftime(s)
-
-
+# endregion time
+#
+# -------------
+#
+# region re
 def re_place(s, find_, with_):
     """fastest replace!"""
     return _re.sub(find_, with_, s)
+# endregion re
+#
+# -------------
+#
+def wordcnt(s: str) -> int:
+    """
+    Simple count of words in s
 
+    Args:
+        s (str): The string
 
-def wordcnt(s):
-    """count of words in s"""
-    tokens = s.split()
-    return len(tokens)
+    Returns:
+        int: The count of words
+    """
+    return len(s.split())
 
+def index_all(s: str, substr: str, overlap: bool = False) -> list[int]:
+    """return indexes of all occurences of substr in s
 
-def index_all(s, substr, overlap=False):
-    """return indexes of all occurences
-    of substr in s
+    Args:
+        s (str): The string in which to find substrings
+        substr (str): The substring to find indexes of in s
+        overlap (bool): Allow overlaps in the search, think of substring 'aaa' and the string 'aaaaaaaaa'.
+
+    Returns:
+        list[int]: List of indexes of occurences of substr in str
     """
     if overlap:
         return [m.start() for m in _re.finditer('(?=%s)' % substr, s)]
-
     return [m.start() for m in _re.finditer(substr, s)]
 
+def numbers_in_str(s: str, type_=float) -> list[(float, int)]:
+    """
+    Return list of numbers in s, PROVIDED numbers are positive integers or floats
 
-def numbers_in_str(s, type_=float):
-    """(str) -> list
+    Args:
+        s (str): the string
+        type_: type to convert number to (e.g. float)
 
-    Return list of numbers in s, PROVIDED numbers are positive integers
-    s: the string
-    type_: type to convert number to (e.g. float)
-    
-    Example:
-    >>>numbers_in_str('asda 1 ssad', type_=float)
-    [1.0]
+    Returns:
+        list[(float, int)]: list of numbers in s, force to type "type_"
+
+    Examples:
+        >>> numbers_in_str('asda 1 ssad', type_=float)
+        [1.0]
 
     >>>numbers_in_str('asda 1.23 ssad', type_=int)
     []   #i.e. doesnt get floats
@@ -589,21 +649,23 @@ def numbers_in_str(s, type_=float):
     return [type_(ss) for ss in s.split() if ss.isdigit()]
 
 
-def numbers_in_str2(s, type_=float):
-    """(str) -> list
-
+def numbers_in_str2(s: str, type_=float) -> list[(float, int)]:
+    """
     Return list of numbers in s, works with floats
 
-    parameters:
-        s: the string
+    Args:
+        s (str): the string
         type_: type to convert number to (e.g. float)
-    
-    Example:
-    >>>numbers_in_str('asda 1.23 ssad 2.1', type_=float)
-    [1.23, 2.1]
 
-    >>>numbers_in_str('asda ssad', type_=int)
-    []
+    Returns:
+        list[(float, int)]: list of numbers in s, force to type "type_"
+
+    Examples:
+        >>> numbers_in_str('asda 1.23 ssad 2.1', type_=float)
+        [1.23, 2.1]
+
+        >>> numbers_in_str('asda ssad', type_=int)
+        []
     """
     lst = []
     if not s: return []

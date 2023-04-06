@@ -8,6 +8,8 @@ for manipulatin other base classes.
 Stick list/tuple/dic functions in here.
 """
 from datetime import timedelta as _timedelta
+from datetime import datetime as _datetime
+
 import inspect as _inspect
 import itertools as _itertools
 import pickle as _pickle
@@ -163,6 +165,12 @@ class TimeDelta(_timedelta):
             float: Diff in seconds
         """
         return self.seconds + self.microseconds + self.days * 86400
+
+    # region statics
+    @staticmethod
+    def now():
+        return _datetime.now()
+    # endregion
 # endregion
 
 # region dict classes
@@ -336,6 +344,7 @@ class DictList(DictKwarg):
 def dic_filter_by_keys(d: dict, keys: (list, tuple)) -> dict:
     """
     Filter a dictionary by a list of keys.
+    No filter is applied if "not keys" evaliates to true.
 
     Args:
         d (dict): Target dict to apply filter
@@ -432,41 +441,46 @@ def dic_vals_same_len(d) -> bool:
     return b
 
 
-def dic_sort_by_val(d):
-    """(dict, bool) -> list
-    Sort a dictionary by the values,
-    returning as a list
+def dic_sort_by_val(d: dict, as_dict: bool = False) -> (list, dict):
+    """
+    Sort a dictionary by the values, returning as a list or dict
 
-    d: dictionary
-    as_dict: return as dictionary rather than list
+    Args:
+        d (dict): dictionary
+        as_dict (bool): return as dictionary rather than list
 
-    returns:
-        list of tuples
+    Returns:
+        list: list of tuples, [(k1, v1), (k2, v2), ...]
+        dict: Sorted dictionary
 
-    Example:
-        >>>dic_sort_by_val({1:1, 2:10, 3:22, 4:1.03})
+    Examples:
+        >>> dic_sort_by_val({1:1, 2:10, 3:22, 4:1.03})
         [(1, 1), (4, 1.03), (2, 10), (3, 22)]
     """
+    if as_dict:
+        return dict(sorted(d.items(), key=lambda item: item[1]))  # noqa
     return sorted(d.items(), key=_operator.itemgetter(1))
 
 
-def dic_sort_by_key(d):
+def dic_sort_by_key(d: dict, as_dict: bool = False) -> (list, dict):
     """(dict) -> list
-    Sort a dictionary by the values,
-    returning as a list of tuples
+    Sort a dictionary by its keys, returning as a list or dict
 
-    d:
-        dictionary
+    Args:
+        d (dict): dictionary
+        as_dict (bool): return as dictionary rather than list
 
-    returns:
-        lit of tuples
+    Returns:
+        list: list of tuples, [(k1, v1), (k2, v2), ...]
+        dict: Sorted dictionary
 
-    Example:
-    >>>dic_sort_by_key({1:1, 4:10, 3:22, 2:1.03})
-    [(1,1), (2,1.03), (3,22), (4,10)]
+    Examples:
+        >>> dic_sort_by_key({1:1, 4:10, 3:22, 2:1.03})
+        [(1,1), (2,1.03), (3,22), (4,10)]
     """
-    out_ = sorted(d.items(), key=_operator.itemgetter(0))
-    return out_
+    if as_dict:
+        return dict(sorted(d.items()))  # noqa
+    return sorted(d.items(), key=_operator.itemgetter(0))
 
 
 def dic_match(a: dict, b: dict) -> ("eDictMatch", None):
@@ -933,7 +947,7 @@ def list_sym_diff(a: list, b: list, rename_keys: (None, list, tuple) = None) -> 
     """
     d = {'a_notin_b': list_not(a, b), 'a_and_b': list_and(a, b), 'b_notin_a': list_not(b, a)}
     if rename_keys:
-        d[rename_keys[0]] = d.pop('a_notin_b')
+        d[rename_keys[0]] = d.pop('a_notin_b')  # noqa
         if len(rename_keys) > 1:
             d[rename_keys[1]] = d.pop('a_and_b')
         if len(rename_keys) > 2:
@@ -942,12 +956,46 @@ def list_sym_diff(a: list, b: list, rename_keys: (None, list, tuple) = None) -> 
     return d
 
 
-def list_and(lst1, lst2):
-    """(list,list)->list
-    Return list elements in both lists
+def list_and(lst1: (list, None), lst2: (list, None), strict: bool = True) -> list:
+    """
+    Return list elements in both lists. Removes duplicates
 
-    **Removes duplicates"""
-    return list(set(lst1).intersection(set(lst2)))
+    Args:
+        lst1 (list, None): List or None
+        lst2 (list, None): second list
+        strict (bool): Do a strict and test. If *not* strict then empty lists or None are ignored for the test, and the none empty list is returned
+
+    Returns:
+         list: A list of the intersection of two lists. See the strict arg.
+
+    Examples:
+        >>> list_and([1,2,3], [3])
+        [3]
+
+        Strict
+        >>> list_and([1,2,3], [])
+        []
+
+        Not strict
+        >>> list_and([1,2,3], [], strict=False)
+        [1, 2, 3]
+
+        Empty, None
+        >>> list_and([], None, strict=False)
+        []
+    """
+    # TODO: test/debug list_and
+    if not lst1 and not lst2: return []
+
+    if strict or (lst1 and lst2):
+        return list(set(lst1).intersection(set(lst2)))
+
+    if not lst1:
+        return list(set(lst2))
+
+    if not lst2:
+        return list(set(lst1))
+
 
 
 def list_or(lst1, lst2):
