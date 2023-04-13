@@ -1294,16 +1294,16 @@ def file_from_substr(fld: str, substr: str, allow_multi_match: bool = False) -> 
     return lst[0]
 
 
-def files_delete2(filenames):
-    """(list|str) -> void
+def files_delete2(filenames: list[str]) -> None:
+    """
     Delete file(s) without raising an error
 
-    filenames:
-        a string or iterable
+    Args:
+        filenames (list[str]): a string or iterable
 
-    Example:
-    >>>files_delete2('C:/myfile.tmp')
-    >>>files_delete2(['C:/myfile.tmp', 'C:/otherfile.log'])
+    Examples:
+        >>> files_delete2('C:/myfile.tmp')
+        >>> files_delete2(['C:/myfile.tmp', 'C:/otherfile.log'])
     """
     if isinstance(filenames, str):
         filenames = [filenames]
@@ -1328,7 +1328,7 @@ def file_delete(fname: str) -> None:
     files_delete2(fname)
 
 
-def files_delete_wildcarded(root: str, match=(), not_match=(), recurse=False, show_progress: bool = False):
+def files_delete_wildcarded(root: str, match=(), not_match=(), recurse=False, show_progress: bool = False, init_msg: str = ''):
     """
     Delete files that match or do not match
     match and not match.
@@ -1341,13 +1341,17 @@ def files_delete_wildcarded(root: str, match=(), not_match=(), recurse=False, sh
         not_match (str, list, tuple): Delete if any item in not_match is not in filename
         recurse (bool): recurse subfolders
         show_progress (bool): Show progress bar in terminal
+        init_msg (str): Passed to the progress bar
 
     Returns:
         None
     """
+    if not init_msg:
+        init_msg = 'Deleting files from %s' % _path.normpath(root)
+
     files_ = [f for f in file_list_generator1(root, '*.pdf', recurse=recurse)]
     if show_progress:
-        PP = PrintProgress(iter_=files_)
+        PP = PrintProgress(iter_=files_, init_msg=init_msg)
     if isinstance(match, str): match = [match]
     if isinstance(not_match, str): not_match = [not_match]
 
