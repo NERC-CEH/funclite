@@ -337,6 +337,13 @@ class DictList(DictKwarg):
         if out:
             return out  # noqa
         return None
+
+    def as_dict(self):
+        """
+        Get as inbuilt dict. Just returns dict(self)
+        Returns: dict
+        """
+        return dict(self)
 # endregion
 
 
@@ -842,6 +849,9 @@ def list_member_in_str(s: str, match: (str, tuple, list), ignore_case: bool = Fa
 
     Returns:
         bool: True if match in [ [],(),None,'',0 ] or if any item in member is IN s else False
+
+    Notes:
+        Also see list_member_in_str2, which returns what the match was made on
     """
     s = str(s)  # let it work with floats & ints
     if not match: return True  # everything is a match if we have nothing to match to
@@ -856,6 +866,45 @@ def list_member_in_str(s: str, match: (str, tuple, list), ignore_case: bool = Fa
     return False
 
 
+# also in stringslib
+def list_member_in_str2(s: str, match: (str, tuple, list), ignore_case: bool = False) -> tuple[bool, (str, None)]:
+    """
+    Check if any member of an iterable is IN s.
+    BUT, returns what the match was made on. Unlike list_member_in_str.
+
+    Args:
+        s (str): string to check list items against
+        match (list, str, tuple): items to check for being IN s
+        ignore_case (bool): make check case insensitive
+
+    Returns:
+        tuple[bool, (str, None)]: True if match in [ [],(),None,'',0 ] or if any item in member is IN s else False; the second tuple element is the match string on which the match was made.
+
+
+    Examples:
+        Matching string
+        >>> list_member_in_str2('my_1234_xyz', ('xyz',))
+        (True, 'xyz')
+
+        No match
+        >>> list_member_in_str2('my_1234_xyz', ('abc',))
+        (False, None)
+    """
+    s = str(s)  # let it work with floats & ints
+    if not match: return True, None  # everything is a match if we have nothing to match to
+    if not isinstance(match, (list, tuple, set, map)):
+        if str(match) in s:
+            return True, match
+        else:
+            return False, None
+
+    if ignore_case: s = s.lower()
+    for m in match:
+        m = str(m)
+        if ignore_case:
+            m = m.lower()
+        if m in s: return True, m
+    return False, None
 
 
 # also in stringslib

@@ -33,7 +33,7 @@ import numpy as _numpy
 import fuckit as _fuckit
 
 import funclite.stringslib as _stringslib
-from funclite.stringslib import pretty_date_now, pretty_date_time_now  # noqa
+from funclite.stringslib import pretty_date_now, pretty_date_time_now, pretty_date  # useful for generating file names when using funcs in this module
 
 from funclite.numericslib import round_normal as _rndnorm
 from funclite.stopwatch import StopWatch as _StopWatch
@@ -1896,6 +1896,21 @@ def fixp(*args) -> str:
         s = _path.join(s, u)
     return _path.normpath(s)
 
+
+def fix(r: str, s: str, mkdir: bool = False):
+    """Concatenate and normpath
+
+    Args:
+        r (str): root path
+        s (str): subfolder like string
+        mkdir (bool): If true, create the dir
+
+    Returns:
+        str: The fixed path
+    """
+    out = _path.normpath(_path.join(r, s))
+    if mkdir: create_folder(out)
+    return out
 
 def file_exists(file_name):
     """(str) -> bool
