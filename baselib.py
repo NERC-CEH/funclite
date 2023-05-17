@@ -94,6 +94,35 @@ class Switch:
             return True
         return False
 
+
+def dt_week_start_end(dt: (str, _datetime)) -> tuple[_datetime, _datetime]:
+    """
+    Get start and end date of the week in which dt falls
+
+    Args:
+        dt (str, datetime): A datetime, date or string representation of a date in iso formay (yyyy-mm-dd)
+
+    Returns:
+        tuple[_datetime, _datetime]: A tuple of week start, week end datetimes
+
+    Notes:
+        Monday based start week
+
+    Examples:
+        ISO date as string
+        >>> dt_week_start_end('2022-12-25')
+        datetime.datetime(2022, 12, 23, 0, 0), datetime.datetime(2022, 12, 30, 0, 0)  # noqa
+
+        passing a datetime instance
+        >>> dt_week_start_end(datetime.strptime('2022-12-23', '%Y-%m-%d'))  # noqa
+        datetime.datetime(2022, 12, 23, 0, 0), datetime.datetime(2022, 12, 30, 0, 0)  # noqa
+    """
+    if isinstance(dt, str):
+        dt = _datetime.strptime(dt, '%Y-%m-%d')
+
+    return dt - _timedelta(days=dt.weekday()), dt - _timedelta(days=dt.weekday()) + _timedelta(days=6)
+
+
 class TimeDelta(_timedelta):
     """ Subclasses datetime.timedelta, adding several methods
     to get total time diff in mins, hours or seconds.
