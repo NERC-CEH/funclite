@@ -24,7 +24,7 @@ class EnumLogStatus(_Enum):
     WARNING = 2
     INFO = 3
 
-WARN_SIZE_MB = 1
+WARN_SIZE_MB = 5
 
 class Log:
     """
@@ -111,7 +111,7 @@ class Log:
         if not self._overwrite:
             if _iolib.file_exists(self.logfile):
                 if _iolib.file_size(self.logfile, 'mb') > WARN_SIZE_MB:
-                    _warn('Log file %s is greater than 1Mb, consider deleting it.' % self.logfile)
+                    _warn('Log file %s is greater than %sMb, consider deleting it.' % (self.logfile, WARN_SIZE_MB))
                 self._log = _iolib.readcsv_by_row(self.logfile)
 
 

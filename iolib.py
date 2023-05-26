@@ -33,7 +33,7 @@ import numpy as _numpy
 import fuckit as _fuckit
 
 import funclite.stringslib as _stringslib
-from funclite.stringslib import pretty_date_now, pretty_date_time_now, pretty_date  # useful for generating file names when using funcs in this module
+from funclite.stringslib import pretty_date_now, pretty_date_time_now, pretty_date  # noqa useful for generating file names when using funcs in this module
 
 from funclite.numericslib import round_normal as _rndnorm
 from funclite.stopwatch import StopWatch as _StopWatch
@@ -1166,6 +1166,27 @@ def file_list_generator2(paths: (str, list, tuple), wildcards: (str, list, tuple
                 if _filter(get_file_parts2(myfile)[1], find, exclude):
                     yield _path.normpath(myfile)
 
+def file_last_modified_get(paths: (str, list, tuple), wildcards: (str, list, tuple), find: (str, tuple, list, None) = None, exclude: (str, tuple, list, None) = None, recurse: bool = False) -> str:
+    """
+    Takes path(s) and wildcard(s) and then returns the last modified fully qualified file name that matches the search criteria.
+
+    Args:
+        paths (str, list, tuple): Single path or list/tuple of paths
+        wildcards (str, list, tuple): Single file extension or list of file extensions. Extensions can be star-dotted or dotted.
+        find (list, str, tuple, None): list or string, to match file names
+        exclude (list, str, tuple, None): list or string, to exclude file names. Overrides find.
+        recurse (bool): recurse down folders
+
+    Returns:
+        str: full qualified file path
+
+    Examples:
+        >>> print(file_last_modified_get('C:/temp', '*.txt', find=['123', 'abc'], exclude=['ignore', 'bad'], recurse=False)
+        'C:/temp/file_latest.txt'
+    """
+    files = [f for f in file_list_generator2(paths, wildcards, find, exclude, recurse)]
+    return max(files, key=_path.getmtime)
+
 
 def file_list_generator_dfe(paths, wildcards, recurse=False):
     """
@@ -1294,12 +1315,12 @@ def file_from_substr(fld: str, substr: str, allow_multi_match: bool = False) -> 
     return lst[0]
 
 
-def files_delete2(filenames: list[str]) -> None:
+def files_delete2(filenames: (list[str], str)) -> None:
     """
     Delete file(s) without raising an error
 
     Args:
-        filenames (list[str]): a string or iterable
+        filenames (list[str], str): a string or iterable
 
     Examples:
         >>> files_delete2('C:/myfile.tmp')
