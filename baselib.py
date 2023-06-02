@@ -123,6 +123,21 @@ def dt_week_start_end(dt: (str, _datetime)) -> tuple[_datetime, _datetime]:
     return dt - _timedelta(days=dt.weekday()), dt - _timedelta(days=dt.weekday()) + _timedelta(days=6)
 
 
+def date_to_datetime(dt):
+    """
+    Converts a date instance to a datetime
+
+    Credited to https://stackoverflow.com/a/1937636/5585800
+
+    Args:
+        dt (date instance): An instance of datetime.date
+
+    Returns:
+        datetime instance
+    """
+    return _datetime.combine(dt.today(), _datetime.min.time())
+
+
 class TimeDelta(_timedelta):
     """ Subclasses datetime.timedelta, adding several methods
     to get total time diff in mins, hours or seconds.

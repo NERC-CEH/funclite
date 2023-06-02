@@ -8,7 +8,7 @@ from warnings import warn as _warn
 from enum import Enum as _Enum
 import inspect as _inspect
 import stat as _stat
-
+import pathlib as _pathlib
 import os as _os
 import os.path as _path
 import shutil as _shutil
@@ -952,6 +952,8 @@ def folder_generator(paths: (str, list)):
     paths = [_path.normpath(p) for p in paths]
     for pth in paths:
         for fld, _, _ in _os.walk(pth):
+            if fld in paths:
+                continue
             yield fld
 
 
@@ -980,7 +982,9 @@ def folder_generator2(paths: (str, list), match: (str, list) = (), ignore_case: 
     paths = [_path.normpath(p) for p in paths]
     for pth in paths:
         for fld, _, _ in _os.walk(pth):
-            if _stringslib.iter_member_in_str(fld, match, ignore_case):
+            if fld in paths:
+                continue
+            if _stringslib.iter_member_in_str(fld, list(map(str, match)), ignore_case):
                 yield fld
 
 
@@ -1131,7 +1135,7 @@ def file_list_generator2(paths: (str, list, tuple), wildcards: (str, list, tuple
 
     def _filter(s: str, find_, exclude_) -> bool:
         found = True
-        if not (find_ and exclude_):
+        if not (find_ or exclude_):
             return True
 
         if isinstance(find_, str):  find_ = [find]
@@ -1166,6 +1170,7 @@ def file_list_generator2(paths: (str, list, tuple), wildcards: (str, list, tuple
                 if _filter(get_file_parts2(myfile)[1], find, exclude):
                     yield _path.normpath(myfile)
 
+
 def file_last_modified_get(paths: (str, list, tuple), wildcards: (str, list, tuple), find: (str, tuple, list, None) = None, exclude: (str, tuple, list, None) = None, recurse: bool = False) -> str:
     """
     Takes path(s) and wildcard(s) and then returns the last modified fully qualified file name that matches the search criteria.
@@ -1186,6 +1191,7 @@ def file_last_modified_get(paths: (str, list, tuple), wildcards: (str, list, tup
     """
     files = [f for f in file_list_generator2(paths, wildcards, find, exclude, recurse)]
     return max(files, key=_path.getmtime)
+
 
 def file_list_generator_dfe(paths, wildcards, recurse=False):
     """
@@ -1348,7 +1354,7 @@ def file_delete(fname: str) -> None:
     files_delete2(fname)
 
 
-def files_delete_wildcarded(root: str, match=(), not_match=(), recurse=False, show_progress: bool = False, init_msg: str = ''):
+def files_delete_wildcarded(root: str, match=(), not_match=(), recurse=False, show_progress: bool = False, init_msg: str = '') -> int:
     """
     Delete files that match or do not match
     match and not match.
@@ -1364,29 +1370,32 @@ def files_delete_wildcarded(root: str, match=(), not_match=(), recurse=False, sh
         init_msg (str): Passed to the progress bar
 
     Returns:
-        None
+        int: number of files deleted
     """
-    if not init_msg:
+    if not init_msg and show_progress:
         init_msg = 'Deleting files from %s' % _path.normpath(root)
 
-    files_ = [f for f in file_list_generator1(root, '*.pdf', recurse=recurse)]
+    files_ = [f for f in file_list_generator1(root, '*', recurse=recurse)]
     if show_progress:
         PP = PrintProgress(iter_=files_, init_msg=init_msg)
     if isinstance(match, str): match = [match]
     if isinstance(not_match, str): not_match = [not_match]
-
-    for f in files_:  # Debug me
+    i = 0
+    for f in files_:
         _, fname, _ = get_file_parts2(f)
         if match:
-            if _baselib.list_str_in_iter(fname, match):
+            if _baselib.list_member_in_str(fname, match):
                 file_delete(f)
+                i += 1
 
         if not_match:
-            if not _baselib.list_str_in_iter(fname, not_match):
+            if not _baselib.list_member_in_str(fname, not_match):
                 file_delete(f)
+                i += 1
 
         if show_progress:
             PP.increment()  # noqa
+    return i
 
 
 def file_delete2(fname, silent=True):
@@ -1932,6 +1941,7 @@ def fix(r: str, s: str, mkdir: bool = False):
     if mkdir: create_folder(out)
     return out
 
+
 def file_exists(file_name):
     """(str) -> bool
     Returns true if file exists
@@ -1958,7 +1968,6 @@ def file_read_write_toggle(fname: str, set_read_only: bool):
             _os.chmod(fname, _stat.S_IREAD)
         else:
             _os.chmod(fname, _stat.S_IWRITE)
-
 
 
 def file_size(file_name: str, units: str = 'bytes') -> float:
@@ -1995,6 +2004,78 @@ def file_size(file_name: str, units: str = 'bytes') -> float:
     elif units in ['bt', 'bits']:
         factor = 1 / 8
     return sz / float(factor)
+
+
+def folder_date_created(fld: str) -> _datetime.datetime:
+    """
+    Folder created date as datetime instance
+
+    Args:
+        fld (str): folder
+
+    Raises:
+        ValueError: If fld was not a folder
+
+    Returns:
+        datetime: A datetime.datetime instance
+
+    Examples:
+        >>> print(folder_date_created('C:/temp'))
+        datetime.datetime(2022, 11, 17, 11, 11, 0, 24340)
+    """
+    fld = _path.normpath(fld)
+    if folder_exists(fld):
+        return _datetime.datetime.fromtimestamp(_pathlib.Path(fld).stat().st_ctime)
+    raise ValueError('%s was not a folder' % fld)
+
+
+def folder_date_modified(fld: str) -> _datetime.datetime:
+    """
+    Folder modified date as datetime instance
+
+    Args:
+        fld (str): folder
+
+    Raises:
+        ValueError: If fld was not a folder
+
+    Returns:
+        datetime: A datetime.datetime instance
+
+    Examples:
+        >>> print(folder_date_created('C:/temp'))
+        datetime.datetime(2022, 11, 17, 11, 11, 0, 24340)
+    """
+    fld = _path.normpath(fld)
+    if folder_exists(fld):
+        return _datetime.datetime.fromtimestamp(_pathlib.Path(fld).stat().st_mtime)
+    raise ValueError('%s was not a folder' % fld)
+
+
+def folder_last_created(root: str) -> str:
+    """Get last created folder in folder root
+
+    Args:
+        root (str): The root folder
+
+    Returns:
+        str: The latest created folder
+    """
+    root = _path.normpath(root)
+    return _path.normpath(max(_glob.glob(_path.join(root, '*/')), key=_path.getctime))
+
+
+def folder_last_modified(root: str) -> str:
+    """Get last modified folder in folder root
+
+    Args:
+        root (str): The root folder
+
+    Returns:
+        str: The latest modified folder
+    """
+    root = _path.normpath(root)
+    return _path.normpath(max(_glob.glob(_path.join(root, '*/')), key=_path.getmtime))
 
 
 def folder_exists(folder_name: str) -> bool:
