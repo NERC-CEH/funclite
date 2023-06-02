@@ -1187,7 +1187,6 @@ def file_last_modified_get(paths: (str, list, tuple), wildcards: (str, list, tup
     files = [f for f in file_list_generator2(paths, wildcards, find, exclude, recurse)]
     return max(files, key=_path.getmtime)
 
-
 def file_list_generator_dfe(paths, wildcards, recurse=False):
     """
     Takes path(s) and wildcard(s), yielding the
