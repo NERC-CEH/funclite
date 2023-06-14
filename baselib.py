@@ -1268,6 +1268,32 @@ def get_platform():
 
 
 # region Other
+def is_debug() -> bool:
+    """ Do we look like we are running in a debugger?
+
+    Returns:
+        bool: True if looks like we are in a debugger
+
+    Notes:
+        Reported to work on PyCharm, unknown in other RADs.
+        Credit to https://stackoverflow.com/a/71170397/5585800
+
+    Examples:
+        >>> is_debug()
+        True
+    """
+    gettrace = getattr(_sys, 'gettrace', None)
+
+    if gettrace is None:
+        return False
+    else:
+        v = gettrace()
+        if v is None:
+            return False
+        else:
+            return True
+
+
 def isIterable(i, strIsIter=False, numpyIsIter=False):
     """(any, bool)->bool
     Tests to see if i looks like an iterable.
