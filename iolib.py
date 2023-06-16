@@ -1969,6 +1969,27 @@ def file_read_write_toggle(fname: str, set_read_only: bool):
         else:
             _os.chmod(fname, _stat.S_IWRITE)
 
+def file_rename_date_stamped(file_name: str) -> str:
+    """
+    Rename a file apending an iso date stamp to the end.
+
+    Args:
+        file_name:
+
+    Returns:
+        str: The name of the renamed file, or empty string if file_name did not exist
+
+    Notes:
+        Failes if the renamed filename already exists
+    """
+    s = _path.normpath(s)
+    if file_exists(s):
+        d, f, e = get_file_parts(s)
+        bn = '%s_%s.%s' % (f, pretty_date_now(), e)
+        fname = fix(d, bn)
+        _os.rename(s, fname)
+        return fname
+    return ''
 
 def file_size(file_name: str, units: str = 'bytes') -> float:
     """
