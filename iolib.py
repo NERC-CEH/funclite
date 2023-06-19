@@ -1982,7 +1982,7 @@ def file_rename_date_stamped(file_name: str) -> str:
     Notes:
         Failes if the renamed filename already exists
     """
-    s = _path.normpath(s)
+    s = _path.normpath(file_name)
     if file_exists(s):
         d, f, e = get_file_parts(s)
         bn = '%s_%s.%s' % (f, pretty_date_now(), e)
