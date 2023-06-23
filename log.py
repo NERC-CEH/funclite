@@ -96,13 +96,15 @@ class Log:
 
         Returns: None
         """
+        # We delete the log file in all cases, because we have already read in the entire existing logfile
+        # if we are appending.
         if self._log:
             if self._overwrite or not append:
                 with _fuckit:
                     _iolib.file_delete(self.logfile)  # just to be sure
                 _iolib.writecsv(self.logfile, self._log, header=['status', 'when', 'msg'], inner_as_rows=False, append=False)
             else:
-                _iolib.writecsv(self.logfile, self._log, inner_as_rows=False, append=True)
+                _iolib.writecsv(self.logfile, self._log, inner_as_rows=False, append=False)
 
 
 

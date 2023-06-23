@@ -456,7 +456,6 @@ def readfld(v, default=None):
     return default if _pd.isnull(v) else v
 
 
-
 # endregion
 
 
@@ -508,6 +507,7 @@ def df_flatten_cols(df: _pd.DataFrame, inplace: bool = True) -> (None, _pd.DataF
         ddf.columns = ddf.columns.to_flat_index().str.join('_')
         ddf.reset_index(inplace=True)
         return ddf
+
 
 def df_from_dict(d):
     """(dict) -> pandas.dataframe
@@ -669,7 +669,7 @@ def dfs_to_excel(dfs: list[pd.DataFrame], save_to: str, sheet_names: (None, list
     """
     save_to = _path.normpath(save_to)
     if not sheet_names:
-        sheet_names = ['Sheet%s' % s for s in range(1, len(dfs)+1)]
+        sheet_names = ['Sheet%s' % s for s in range(1, len(dfs) + 1)]
     else:
         if len(dfs) != len(sheet_names):
             raise ValueError('If you pass sheet_names, then the number of names must be the same as the number of dataframes')
@@ -711,6 +711,59 @@ def excel_table_as_df(workbook: str, worksheet: (str, int), table: (str, int)) -
         df: _pd.DataFrame = rng.expand().options(_pd.DataFrame).value
         df.reset_index(inplace=True)
     return df
+
+
+def excel_diff(wb1: str, sht1: str, wb2: str = None, sht2: str = None, tbl1: str = None, tbl2: str = None, key_cols: tuple = (), diff_cols: tuple = (), diff_only: bool = False) -> _pd.DataFrame:
+    """
+    Difference between two excel worksheets.
+
+    Args:
+        wb1 (str):
+        sht1 (str):
+        wb2 (str, None):
+        sht2 (str):
+        tbl1 (str):
+        tbl2 (str):
+        key_cols (tuple[str], None):
+        diff_cols (tuple[str], None):
+        diff_only (bool): Only return rows where any single cell had a difference
+
+    Raises:
+        ValueError: If tbl1 or tbl2 are passed, but the other tbl arg evaluates to False. Or if wb1 or wb2 are not defined but tbl1 and tbl2 are (we need the workbook to get the table).
+
+    Returns:
+        pandas.DataFrame: Differences
+    """
+    # TODO: Complete excel_diff.
+    raise NotImplementedError("Not yet implemented")
+    if not wb2: wb2 = wb1
+    if not sht2: sht2 = sht1
+
+    if tbl1 and not tbl2 or not tbl1 and tbl2:
+        raise ValueError('If comparing tables, arguments must be provided for tbl1 and tbl2')
+    elif tbl1 and tbl2:
+        if not sht1 or not sht2:
+            raise ValueError('If comparing tables, wb1 and wb2 must be defined.')
+
+
+    if tbl1 and tbl2:
+        pass
+    else:
+        df1 = _pd.read_excel('excel1.xlsx')
+        df2 = pd.read_excel('excel2.xlsx')
+    # order by key cols
+    # retain key cols as seperate dataframe
+    # check that values in key cols are unique
+    # need to find missing keys in each and add to two dataframes (fill in row gaps)
+    # difference between ordered dataframe cols defined by diff_cols, or NOT keycols if not diff_cols
+    # join on results
+    # Filter rows where all diff_cols are NaN according to diff_only
+    # consider adding a field is_changed, flagged as 0 if no change in the row, else 1
+
+    diff_df1_vals = df1[df1 != df2]
+    diff_df2_vals = df2[df1 != df2]
+
+    return diff_df1_vals, diff_df2_vals
 
 
 # ---------------
