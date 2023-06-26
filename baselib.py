@@ -140,9 +140,10 @@ def date_to_datetime(dt):
 
 
 class TimeDelta(_timedelta):
-    """ Subclasses datetime.timedelta, adding several methods
+    """
+    Subclasses datetime.timedelta, adding several methods
     to get total time diff in mins, hours or seconds.
-    Also supports friend print.
+    Also supports friendly print.
 
     Methods:
         __str__: Overridden __str__ class, with friendly time print
@@ -150,10 +151,20 @@ class TimeDelta(_timedelta):
         as_hours: Time diff in hours
         as_seconds: Time diff in seconds
 
+    Notes:
+        If timedelta is provided, all other arguments are ignored at initialisation.
+
     Examples:
-        Get time in hours between now and the last modification date of a file
-        >>> TimeDelta(datetime.now() - iolib.file_modification_date('C:/my.xlsx')).as_hours  # noqa
+        Use as basic timedelta
+
+        >>> datetime.now() - TimeDelta(days=2)  # noqa
         1.1234
+
+
+        Time conversion to different units
+
+        >>> TimeDelta(days=8).as_hours
+        192.0
 
     Credit:
         Partial credit to https://stackoverflow.com/a/61883517/5585800
@@ -204,12 +215,20 @@ class TimeDelta(_timedelta):
         return self.as_mins/60
 
     @property
+    def as_days(self) -> float:
+        """ Diff in days
+        Returns:
+            float: diff in days
+        """
+        return self.as_hours/24
+
+    @property
     def as_seconds(self) -> float:
         """Diff in seconds
         Returns:
             float: Diff in seconds
         """
-        return self.seconds + self.microseconds + self.days * 86400
+        return self.seconds + (self.microseconds/1e6) + self.days * 86400
 
     # region statics
     @staticmethod

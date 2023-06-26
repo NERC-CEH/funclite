@@ -1897,6 +1897,39 @@ def file_modification_date(file_name: str) -> _datetime.datetime:
     t = _path.getmtime(file_name)
     return _datetime.datetime.fromtimestamp(t)
 
+def file_age(file_name: str, time_unit: str = 'days') -> float:
+    """Get age of file
+
+    Args:
+        file_name (str): the file
+        time_unit (str): units, supports "days", "hours", "seconds"
+
+    Raises:
+        ValueError: If time_unit argument was invalid
+
+    Returns:
+        float: file age in requested time units
+
+    Notes:
+        file_name is normpathed
+
+    Examples:
+        >>> file_age('C:/my.txt', 'hours')
+        15.123
+    """
+    file_name = _path.normpath(file_name)
+    if time_unit not in ['days', 'hours', 'seconds', 'minutes']:
+        raise ValueError('time_unit value "%s" invalid. Use "days", "hours", "seconds" or "minutes"' % time_unit)
+
+    td = _datetime.datetime.now() - file_creation_date(file_name)
+    if time_unit == 'days':
+        return _baselib.TimeDelta(days=td.days, microseconds=td.microseconds, seconds=td.seconds).as_days
+    if time_unit == 'seconds':
+        return _baselib.TimeDelta(days=td.days, microseconds=td.microseconds, seconds=td.seconds).as_seconds  # noqa
+    if time_unit == 'minutes':
+        return _baselib.TimeDelta(days=td.days, microseconds=td.microseconds, seconds=td.seconds).as_mins  # noqa
+    if time_unit == 'hours':
+        return _baselib.TimeDelta(days=td.days, microseconds=td.microseconds, seconds=td.seconds).as_hours  # noqa
 
 def file_creation_date(file_name: str) -> _datetime.datetime:
     """Get file creation date as a datetime
