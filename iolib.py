@@ -1889,6 +1889,27 @@ def file_move(fname: str, tofld: str, delete_on_exists: bool = True) -> None:
     _shutil.move(fname, tofld)
 
 
+def folder_last_created_age(src: str) -> tuple[_baselib.TimeDelta, str]:
+    """
+
+    Args:
+        src (str): Root folder
+
+    Returns:
+        tuple[_baselib.TimeDelta, str]: A TimeDelta instance from funclite.baselib and the actual folder detected as last created one
+
+    Examples:
+        >>> folder_last_created_age('C:/temp')[1]
+        'C:/temp/latest'
+
+
+        >>> folder_last_created_age('C:/temp')[0].as_days
+        8
+    """
+    fld = folder_last_created(src)
+    return _baselib.TimeDelta.TimeDelta(_datetime.datetime.now() - folder_date_created(fld)), fld
+
+
 def file_modification_date(file_name: str) -> _datetime.datetime:
     """Get file modification date as a datetime
 

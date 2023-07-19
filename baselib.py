@@ -23,8 +23,6 @@ import ast as _ast
 
 import numpy as _np
 
-import funclite.iolib as _iolib
-
 
 # region enums
 class eDictMatch(_Enum):
@@ -234,6 +232,22 @@ class TimeDelta(_timedelta):
     @staticmethod
     def now():
         return _datetime.now()
+
+
+    @staticmethod
+    def TimeDelta(timedelta: _timedelta):
+        """
+        Args:
+            timedelta (datetime.timedelta): A timedelta class used to create a TimeDelta subclass
+
+        Returns:
+            TimeDelta: A TimeDelta instance
+
+        Notes:
+            This method created as issue with overriding and super(ing) to timedelta.__init__
+            Could probably resolve at some point, but this will do for now.
+        """
+        return TimeDelta(timedelta.days, timedelta.seconds, timedelta.microseconds)
     # endregion
 # endregion
 
@@ -1367,8 +1381,9 @@ def pickle(obj, fname):
 
     Also see unpickle
     """
-    d, _, _ = _iolib.get_file_parts2(fname)
-    _iolib.create_folder(d)
+    from iolib import get_file_parts2, create_folder  # import here to avoid circular imports
+    d, _, _ = get_file_parts2(fname)
+    create_folder(d)
     with open(fname, 'wb') as f:
         _pickle.dump(obj, f)
 
