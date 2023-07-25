@@ -487,6 +487,25 @@ def df_fromstring(str_, sep=',', header=0, names=None, **args):  # noqa
     raise NotImplementedError
 
 
+def df_lower(df: _pd.DataFrame, inplace=True):
+    """
+    Convert cols to lower case
+
+    Args:
+        df: df
+        inplace: inplace or return a copy
+
+    Returns:
+        the df
+    """
+    if inplace:
+        df.columns = df.columns.str.lower()
+        return
+    ddf = df.copy()
+    ddf.columns = ddf.columns.str.lower()
+    return ddf
+
+
 def df_flatten_cols(df: _pd.DataFrame, inplace: bool = True) -> (None, _pd.DataFrame):
     """
     Try and flatten multiindex cols to single list of cols.
