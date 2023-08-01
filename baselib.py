@@ -7,6 +7,7 @@ for manipulatin other base classes.
 
 Stick list/tuple/dic functions in here.
 """
+import traceback as _traceback
 from datetime import timedelta as _timedelta
 from datetime import datetime as _datetime
 import sys as _sys
@@ -1245,6 +1246,8 @@ def list_flatten(items, seqtypes=(list, tuple)):
         while i < len(citems) and isinstance(citems[i], seqtypes):
             citems[i:i + 1] = citems[i]
     return citems
+# endregion
+
 
 
 # region tuples
@@ -1263,8 +1266,6 @@ def tuple_add_elementwise(tups):
     (2, 4)
     """
     return tuple(map(sum, zip(*tups)))
-
-
 # endregion
 
 
@@ -1296,8 +1297,6 @@ def get_platform():
     if s in ("win32", "windows"):
         return 'windows'
     return 'unknown'
-
-
 # endregion
 
 
@@ -1422,6 +1421,20 @@ def var_get_name(var):
     callers_local_vars = _inspect.currentframe().f_back.f_locals.items()
     return [var_name for var_name, var_val in callers_local_vars if var_val is var]
 
+
+# region exceptions
+def exception_to_str(e: Exception) -> str:
+    """
+    Get an exception as a string, as printed to the console
+
+    Args:
+        e (Exception): an exception instance
+
+    Returns:
+        str: Exception as printed to console
+    """
+    return '\n'.join(_traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
+# endregion exceptions
 
 if __name__ == "__main__":
     out__ = list_get_dups([1, 1, 2, 3, 4, 4, 4], 3)
