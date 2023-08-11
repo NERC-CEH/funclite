@@ -15,6 +15,7 @@ import inspect as _inspect
 import itertools as _itertools
 import pickle as _pickle
 import collections as _collections
+import dateutil as _dateutil
 
 
 import operator as _operator
@@ -1396,13 +1397,32 @@ def unpickle(fname):
         obj = _pickle.load(f)
     return obj
 
+def is_date(s) -> bool:
+    """Test if s looks like a date
+    """
+    if s:
+        try:
+            _dateutil.parser.parse(s)  # noqa
+            return True
+        except:
+            return False
+    return False
 
 def is_int(s):
-    """is int"""
+    """is int. A float is not an int for this func"""
     try:
         n = int(s)
         f = float(s)
         return n == f
+    except:
+        return False
+
+
+def is_float(s):
+    """ is float"""
+    try:
+        _ = float(s)
+        return True
     except:
         return False
 
