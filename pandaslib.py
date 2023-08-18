@@ -48,12 +48,16 @@ class GroupBy:
 
 
     Examples:
+
+        General example
+
         >>> df = <LOAD A DATA FRAME>  # noqa
         >>> GroupBy.PRECISION = 1
         >>> GB = GroupBy(df, ['fish', 'sex'], ['length', 'weight'], np.mean, np.median, GroupBy.fCI(95), GroupBy.fPercentile(25), flatten=True)  # noqa
         >>> GB.to_excel('C:\temp\tmp.xlsx', fail_if_exists=False)  # noqa
 
         Using col_names_out and flatten
+
         >>> GroupBy(df, ['country', 'region'], ['population'], GroupBy.numpy.sum, flatten=True, col_names_out=('country', 'region', 'population')).result  # noqa
         country     region      population
         UK          Midlands    10000000
@@ -313,6 +317,98 @@ def col_append(df, col_name):
     """
     df.loc[:, col_name] = _pd.Series(_pd.np.nan, index=df.index)
 
+
+def col_calculate_percent_by_group(df: _pd.DataFrame,
+                                   perc_col_name: str,
+                                   group_by_col: str,
+                                   value_col: str,
+                                   as_proportion: bool = False,
+                                   round_func = lambda v: np.round(v, decimals=1),
+                                   inplace=False) -> (None, _pd.DataFrame):
+    """
+    Add a percentage or proportion calculated column, split/stratified by the values in another column
+
+    Args:
+        df: dataframe
+        perc_col_name: new col to add, assigned percent values
+        group_by_col: The groupings within which to calculate percent values
+        value_col: The name of the col with the values
+        as_proportion: Return as proportion rather then percent
+        round_func: A function accepting a single float value which rounds, this is used to round the result, useful when output is used for reporting purposes. Pass none to leave value as-is.
+        inplace: Inplace, otherwise return
+
+    Returns:
+        None: If in place
+        pandas.DataFrame: If inplace is false
+
+    Notes:
+        Also see the general method col_calculate_by_group
+
+    Examples:
+
+        Percent of "count" by county as percentage, returning a new dataframe
+
+        >>> dfres = pd.DataFrame({'county': ['Berks', 'Yorks'] * 3, 'count': [10,10,30, 42,7,1]})  # noqa
+        >>> col_calculate_percent_by_group(dfres, 'perc', 'county', 'count')
+        county  perc
+        Berks   50
+        Yorks   50
+    """
+
+    if inplace:
+        df[perc_col_name] = df[value_col] / df.groupby(group_by_col)[value_col].transform('sum') * (1 if as_proportion else 100)
+        if round_func: df[perc_col_name] = df[perc_col_name].apply(round_func)
+        return
+
+    dfcpy = df.copy()
+    dfcpy[perc_col_name] = dfcpy[value_col] / dfcpy.groupby(group_by_col)[value_col].transform('sum') * (1 if as_proportion else 100)
+    if round_func: df[perc_col_name] = df[perc_col_name].apply(round_func)
+    return dfcpy  # noqa
+
+
+def col_calculate_by_group(df: _pd.DataFrame,
+                           result_col_name: str,
+                           group_by_col: str, value_col: str,
+                           transform, round_func = lambda v: np.round(v, decimals=1),
+                           inplace=False) -> (None, _pd.DataFrame):
+    """
+    Add a percentage or proportion calculated column, split/stratified by the values in another column
+
+    Args:
+        df: dataframe
+        result_col_name: new col to add, assigned percent values
+        group_by_col: The groupings within which to calculate percent values
+        value_col: The name of the col with the values
+        transform: An argument accepted by Series.transform. Can be a function, str, list or dict. Some supported strings are 'sum', 'max', 'min'. See https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.transform.html.
+        round_func: A function accepting a single float value which rounds, this is used to round the result, useful when output is used for reporting purposes. Pass none to leave value as-is.
+        inplace: Inplace, otherwise return
+
+    Returns:
+        None: If in place
+        pandas.DataFrame: If inplace is false
+
+    Notes:
+        Also see the specific method col_calculate_percent_by_group
+
+    Examples:
+
+        max of "count" by county, returning a new dataframe
+
+        >>> dfres = pd.DataFrame({'county': ['Berks', 'Yorks'] * 3, 'count': [10,10,30, 42,7,1]})  # noqa
+        >>> col_calculate_percent_by_group(dfres, 'max_count', 'county', 'count', transform='max')
+        county  max_count
+        Berks   30
+        Yorks   42
+    """
+    if not inplace:
+        df[result_col_name] = df[value_col] / df.groupby(group_by_col)[value_col].transform(transform)
+        if round_func: df[result_col_name] = df[result_col_name].apply(round_func)
+        return
+
+    dfcpy = df.copy()
+    dfcpy[result_col_name] = dfcpy[value_col] / dfcpy.groupby(group_by_col)[value_col].transform(transform)
+    if round_func: df[result_col_name] = df[result_col_name].apply(round_func)
+    return dfcpy  # noqa
 
 def col_append_nan_fill(df, col_name):
     """(df,str)->df
@@ -764,7 +860,6 @@ def excel_diff(wb1: str, sht1: str, wb2: str = None, sht2: str = None, tbl1: str
         if not sht1 or not sht2:
             raise ValueError('If comparing tables, wb1 and wb2 must be defined.')
 
-
     if tbl1 and tbl2:
         pass
     else:
@@ -782,7 +877,7 @@ def excel_diff(wb1: str, sht1: str, wb2: str = None, sht2: str = None, tbl1: str
     diff_df1_vals = df1[df1 != df2]
     diff_df2_vals = df2[df1 != df2]
 
-    return diff_df1_vals, diff_df2_vals
+    return diff_df1_vals, diff_df2_vals  # noqa
 
 
 # ---------------
