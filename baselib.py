@@ -1032,8 +1032,8 @@ def list_not(lst: list, not_in_list: list) -> (list, None):
         Removes duplicates
 
     Returns:
-        None: if lst is empty
         list: A list or none if lst and not_in_list are empty
+        None: if lst is empty
 
     Examples:
         >>> list_not([1,2,3,4,5,6], [5,6,7,8])

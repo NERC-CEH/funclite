@@ -323,7 +323,7 @@ def col_calculate_percent_by_group(df: _pd.DataFrame,
                                    group_by_col: str,
                                    value_col: str,
                                    as_proportion: bool = False,
-                                   round_func = lambda v: np.round(v, decimals=1),
+                                   round_func=lambda v: np.round(v, decimals=1),
                                    inplace=False) -> (None, _pd.DataFrame):
     """
     Add a percentage or proportion calculated column, split/stratified by the values in another column
@@ -369,7 +369,7 @@ def col_calculate_percent_by_group(df: _pd.DataFrame,
 def col_calculate_by_group(df: _pd.DataFrame,
                            result_col_name: str,
                            group_by_col: str, value_col: str,
-                           transform, round_func = lambda v: np.round(v, decimals=1),
+                           transform, round_func=lambda v: np.round(v, decimals=1),
                            inplace=False) -> (None, _pd.DataFrame):
     """
     Add a percentage or proportion calculated column, split/stratified by the values in another column
@@ -409,6 +409,7 @@ def col_calculate_by_group(df: _pd.DataFrame,
     dfcpy[result_col_name] = dfcpy[value_col] / dfcpy.groupby(group_by_col)[value_col].transform(transform)
     if round_func: df[result_col_name] = df[result_col_name].apply(round_func)
     return dfcpy  # noqa
+
 
 def col_append_nan_fill(df, col_name):
     """(df,str)->df
