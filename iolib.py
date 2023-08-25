@@ -1891,6 +1891,7 @@ def file_move(fname: str, tofld: str, delete_on_exists: bool = True) -> None:
 
 def folder_last_created_age(src: str) -> tuple[_baselib.TimeDelta, str]:
     """
+    Get the file last created in folder src.
 
     Args:
         src (str): Root folder
@@ -1899,6 +1900,7 @@ def folder_last_created_age(src: str) -> tuple[_baselib.TimeDelta, str]:
         tuple[_baselib.TimeDelta, str]: A TimeDelta instance from funclite.baselib and the actual folder detected as last created one
 
     Examples:
+
         >>> folder_last_created_age('C:/temp')[1]
         'C:/temp/latest'
 
@@ -1935,6 +1937,7 @@ def file_age(file_name: str, time_unit: str = 'days') -> float:
         file_name is normpathed
 
     Examples:
+
         >>> file_age('C:/my.txt', 'hours')
         15.123
     """
@@ -1961,18 +1964,41 @@ def file_creation_date(file_name: str) -> _datetime.datetime:
     return _datetime.datetime.fromtimestamp(t)
 
 
-def file_create(file_name, s=''):
-    """(str, str) -> void
-    Creates file  and write s to it
-    if it doesnt exist
+def file_create(file_name: str, s: str = '') -> None:
+    """
+    Creates file and write s to it if it doesnt exist
+
+    Args:
+        file_name (str): File to create and write s to
+        s (str): The text to write to file_name
+
+    Returns:
+        None
+
+    Examples:
+
+        Write to a file
+
+        >>> file_create('C:/my.txt', 'The quick brown fox')
     """
     if not _path.isfile(file_name):
         write_to_eof(file_name, s)
 
 
 def fixp(*args) -> str:
-    """(str|list)->str
-    basically path.normpath
+    """
+    basically path.normpath accepting multiple path parts.
+
+    Args:
+        args: string arguments
+
+    Returns:
+        str: The fixed path
+
+    Examples:
+
+        >>> fixp('C:\', 'temp', 'my.txt')
+        'C:/temp/my.txt'
     """
     s = ''
     for u in args:
@@ -1980,7 +2006,7 @@ def fixp(*args) -> str:
     return _path.normpath(s)
 
 
-def fix(r: str, s: str, mkdir: bool = False):
+def fix(r: str, s: str, mkdir: bool = False) -> str:
     """Concatenate and normpath
 
     Args:
@@ -1996,9 +2022,15 @@ def fix(r: str, s: str, mkdir: bool = False):
     return out
 
 
-def file_exists(file_name):
-    """(str) -> bool
-    Returns true if file exists
+def file_exists(file_name: str) -> bool:
+    """
+    Returns true if file exists, else False.
+
+    Args:
+        file_name (str): The file
+
+    Returns:
+        bool: True if exists else false
     """
     file_name = _path.normpath(file_name)
     if isinstance(file_name, str):
@@ -2016,6 +2048,17 @@ def file_read_write_toggle(fname: str, set_read_only: bool):
         set_read_only (bool): Read only status
 
     Returns: None
+
+    Examples:
+
+        Set read only
+
+        >>> file_read_write_toggle('C:/my.txt', True)
+
+
+        Set write
+
+        >>> file_read_write_toggle('C:/my.txt', False)
     """
     with _fuckit:  # if this fails, not end of world .. ignore error and leave it to the caller to raise/capture the error
         if set_read_only:
