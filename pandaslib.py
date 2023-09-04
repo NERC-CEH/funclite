@@ -362,7 +362,7 @@ def col_calculate_percent_by_group(df: _pd.DataFrame,
 
     dfcpy = df.copy()
     dfcpy[perc_col_name] = dfcpy[value_col] / dfcpy.groupby(group_by_col)[value_col].transform('sum') * (1 if as_proportion else 100)
-    if round_func: df[perc_col_name] = df[perc_col_name].apply(round_func)
+    if round_func: dfcpy[perc_col_name] = dfcpy[perc_col_name].apply(round_func)
     return dfcpy  # noqa
 
 
