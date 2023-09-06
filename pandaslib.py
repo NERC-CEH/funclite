@@ -779,7 +779,9 @@ def dfs_to_excel(dfs: list[pd.DataFrame], save_to: str, sheet_names: (None, list
         None
 
     Examples:
+
         Export a dataframe to 3 worksheets, and specify index and startrow kwargs to pass to DataFrame.to_excel
+
         >>> df = pd.DataFrame({1:[1,2,3], 2:[2,3,4]}
         >>> dfs_to_excel([df, df, df], 'C:/temp/my.xlsx', ['df1', 'df2', 'df3'], index=False, startrow=1)
     """
