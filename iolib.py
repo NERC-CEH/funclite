@@ -1726,6 +1726,7 @@ def files_copy(from_: str, tofld: str, delete_=False, showprogress: bool = False
 
     Notes:
         files_move is quicker for move operations (i.e. passing delete_ = True here). Also see files_copy2
+        See files_copy3 for a simple method that recurses and only copies new/updated files
 
     Examples:
         >>> files_copy('C:/TEMP/*.*', 'C:/TEMP/SUBDIR')
@@ -1767,9 +1768,10 @@ def files_copy2(from_: str, tofld: str, file_match: (str, list[str], None) = '',
 
     Notes:
         files_move is quicker for move operations (i.e. passing delete_ = True here)
+        See files_copy3 for a simple method that recurses and only copies new/updated files
 
     Examples:
-        >>> files_copy2('C:/TEMP/*.*', 'C:/TEMP/SUBDIR', file_match= ['.pdf', 'march_images'])
+        >>> files_copy2('C:/TEMP/*.*', 'C:/TEMP/SUBDIR', file_match= ['.pdf', 'march_images'])  # noqa
         15
     """
     from_ = _path.normpath(from_)

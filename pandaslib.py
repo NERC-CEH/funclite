@@ -26,6 +26,56 @@ import funclite.statslib as _statslib
 
 
 # region Pandas
+class MoveColumn:
+    """ Move columns in pandas dataframe
+    
+    This is a verbatim copy of this repo ... full credit to the author.
+    
+    Credit: https://github.com/saadbinmunir/MoveColumn/tree/main/movecolumn
+    """
+
+    @staticmethod
+    def MoveTo1(df, col: str) -> _pd.DataFrame:
+        col1 = df.pop(col)
+        df.insert(loc=0, column=col, value=col1)
+        return df
+
+    @staticmethod
+    def MoveTo2(df, col: str) -> _pd.DataFrame:
+        col1 = df.pop(col)
+        df.insert(loc=1, column=col, value=col1)
+        return df
+
+    @staticmethod
+    def MoveTo3(df, col: str) -> _pd.DataFrame:
+        col1 = df.pop(col)
+        df.insert(loc=2, column=col, value=col1)
+        return df
+
+    @staticmethod
+    def MoveTo4(df, col: str) -> _pd.DataFrame:
+        col1 = df.pop(col)
+        df.insert(loc=3, column=col, value=col1)
+        return df
+
+    @staticmethod
+    def MoveTo5(df, col: str) -> _pd.DataFrame:
+        col1 = df.pop(col)
+        df.insert(loc=4, column=col, value=col1)
+        return df
+
+    @staticmethod
+    def MoveToLast(df, col: str) -> _pd.DataFrame:
+        col1 = df.pop(col)
+        df.insert(loc=len(df.columns), column=col, value=col1)
+        return df
+
+    @staticmethod
+    def MoveToN(df, col, n: int) -> _pd.DataFrame:
+        col1 = df.pop(col)
+        df.insert(loc=n - 1, column=col, value=col1)
+        return df
+
 
 class GroupBy:
     """Wrapper for the Pandas group_by function.

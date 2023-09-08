@@ -1443,7 +1443,7 @@ def var_get_name(var):
 
 
 # region exceptions
-def exception_to_str(e: Exception) -> str:
+def exception_to_str(e: Exception) -> (str, None):
     """
     Get an exception as a string, as printed to the console
 
@@ -1452,8 +1452,10 @@ def exception_to_str(e: Exception) -> str:
 
     Returns:
         str: Exception as printed to console
+        None: If e was not a Exception instance
     """
-    return '\n'.join(_traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
+    if isinstance(e, Exception):
+        return '\n'.join(_traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
 # endregion exceptions
 
 if __name__ == "__main__":
