@@ -16,7 +16,7 @@ import itertools as _itertools
 import pickle as _pickle
 import collections as _collections
 import dateutil as _dateutil
-
+import random as _random
 
 import operator as _operator
 from copy import deepcopy as _deepcopy
@@ -985,6 +985,43 @@ def list_member_in_str2(s: str, match: (str, tuple, list), ignore_case: bool = F
             m = m.lower()
         if m in s: return True, m
     return False, None
+
+
+def list_random_pick(lst: list, n: int) -> list:
+    """pick n random elements from list lst
+
+    Args:
+        lst: list
+        n: number of elements to pick
+
+    Returns:
+        list:
+            The list with n random elements
+
+    Notes:
+        If n > len(list), the full list is returned
+        If lst evaluates to None, an empty list is returned
+
+    Examples:
+
+        Pick 3 elements randomly from a list
+
+        >>> list_random_pick([1, 2, 3, 4, 5], 3)
+        [2, 4, 5]
+
+        List too small for "n" elements
+
+        >>> list_random_pick([1, 2, 3, 4, 5], 6)
+        [1, 2, 3, 4, 5]
+
+        lst evaluates to False (e.g. None)
+
+        >>> list_random_pick(None, 6)  # noqa
+        []
+    """
+    if not lst: return []
+    if len(lst) <= n: return list(lst)
+    return _random.sample(lst, n)
 
 
 # also in stringslib
