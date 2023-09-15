@@ -120,6 +120,9 @@ class GroupBy:
 
     def __init__(self, df, groupflds, valueflds, *funcs, **kwargs):
         self.df = df
+
+        if isinstance(groupflds, str): groupflds = [groupflds]
+        if isinstance(valueflds, str): valueflds = [valueflds]
         self._groupflds = groupflds
         self._valueflds = valueflds
 
