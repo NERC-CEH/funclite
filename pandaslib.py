@@ -139,6 +139,9 @@ class GroupBy:
         Use this method to return a flattened dataset
 
         Returns: _pd.Dataframe: The results in a pandas dataframe pandas
+
+        Notes:
+            flatten is forced if col_names_out evaluates to True (otherwise we get an index error)
         """
         allfuncs = self._funcs * len(self._valueflds)  # noqa
         d = {}
@@ -146,7 +149,7 @@ class GroupBy:
             d[v] = self._funcs
 
         self.result = self.df.groupby(self._groupflds).agg(d)
-        if self._flatten:
+        if self._flatten or self._col_names_out:  # col_names_out needs a flattened result
             # self.result.reset_index(inplace=True)
             self.result.columns = self.result.columns.to_flat_index().str.join('_')
             self.result.reset_index(inplace=True)
@@ -362,6 +365,13 @@ def df_to_ndarray(df):
     return df.as_matrix([x for x in df.columns])
 
 
+def vstack(*args):
+    """vertically stack dataframses
+    Just a call to pandas.concat, but i kept forgetting what it was called
+    """
+    return _pd.concat([df for df in args])
+
+
 def col_append(df, col_name):
     """(df,str)->df
     df is BYREF
@@ -373,7 +383,7 @@ def col_append(df, col_name):
 
 def col_calculate_percent_by_group(df: _pd.DataFrame,
                                    perc_col_name: str,
-                                   group_by_col: str,
+                                   group_by_col: (str, None),
                                    value_col: str,
                                    as_proportion: bool = False,
                                    round_func=lambda v: np.round(v, decimals=1),
@@ -384,7 +394,7 @@ def col_calculate_percent_by_group(df: _pd.DataFrame,
     Args:
         df: dataframe
         perc_col_name: new col to add, assigned percent values
-        group_by_col: The groupings within which to calculate percent values
+        group_by_col: The groupings within which to calculate percent values, pass None, to apply across whole dataframe
         value_col: The name of the col with the values
         as_proportion: Return as proportion rather then percent
         round_func: A function accepting a single float value which rounds, this is used to round the result, useful when output is used for reporting purposes. Pass none to leave value as-is.
@@ -401,20 +411,26 @@ def col_calculate_percent_by_group(df: _pd.DataFrame,
 
         Percent of "count" by county as percentage, returning a new dataframe
 
+        Grouping
+
         >>> dfres = pd.DataFrame({'county': ['Berks', 'Yorks'] * 3, 'count': [10,10,30, 42,7,1]})  # noqa
         >>> col_calculate_percent_by_group(dfres, 'perc', 'county', 'count')
         county  perc
         Berks   50
         Yorks   50
     """
+    if group_by_col:
+        denom = df.groupby(group_by_col)[value_col].transform('sum') / (1 if as_proportion else 100)  # check this in debug
+    else:
+        denom = df[value_col].sum() / (1 if as_proportion else 100)
 
     if inplace:
-        df[perc_col_name] = df[value_col] / df.groupby(group_by_col)[value_col].transform('sum') * (1 if as_proportion else 100)
+        df[perc_col_name] = df[value_col] / denom
         if round_func: df[perc_col_name] = df[perc_col_name].apply(round_func)
         return
 
     dfcpy = df.copy()
-    dfcpy[perc_col_name] = dfcpy[value_col] / dfcpy.groupby(group_by_col)[value_col].transform('sum') * (1 if as_proportion else 100)
+    dfcpy[perc_col_name] = dfcpy[value_col] / denom
     if round_func: dfcpy[perc_col_name] = dfcpy[perc_col_name].apply(round_func)
     return dfcpy  # noqa
 
