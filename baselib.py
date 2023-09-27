@@ -507,6 +507,7 @@ def dic_value_counts(d: dict) -> dict:
     """
     return dict(_collections.Counter(d.values()))
 
+
 def dic_vals_same_len(d) -> bool:
     """
     Check if the values in dictionary d have the same length.
