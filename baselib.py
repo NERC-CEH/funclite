@@ -492,6 +492,27 @@ def dic_key_with_max_val(d):
     """
     return max(d, key=lambda key: d[key])
 
+def dic_expand_keys_to_list(d: dict[str:list]) -> list[list]:
+    """
+
+    Args:
+        d (dict): A dictionary where keys are non-iterables and value are iterables (list)
+
+    Returns:
+        list: A nested list. See examples
+
+    Examples:
+
+        >>> dic_expand_to_list({'a':[1, 3]. 'b':['x', 'y']})
+        [['a', 1], ['a', 3], ['b', 'x'], ['b', 'y']]
+    """
+    lst = []
+    for k, v in d.items():
+        for s in v:
+            lst += [[k, s]]
+    return lst
+
+
 def dic_value_counts(d: dict) -> dict:
     """
 
