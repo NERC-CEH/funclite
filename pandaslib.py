@@ -383,7 +383,7 @@ def col_append(df, col_name):
 
 def col_calculate_percent_by_group(df: _pd.DataFrame,
                                    perc_col_name: str,
-                                   group_by_col: (str, None),
+                                   group_by_cols: (str, list, None),
                                    value_col: str,
                                    as_proportion: bool = False,
                                    round_func=lambda v: np.round(v, decimals=1),
@@ -394,7 +394,7 @@ def col_calculate_percent_by_group(df: _pd.DataFrame,
     Args:
         df: dataframe
         perc_col_name: new col to add, assigned percent values
-        group_by_col: The groupings within which to calculate percent values, pass None, to apply across whole dataframe
+        group_by_cols: The groupings within which to calculate percent values, pass None, to apply across whole dataframe
         value_col: The name of the col with the values
         as_proportion: Return as proportion rather then percent
         round_func: A function accepting a single float value which rounds, this is used to round the result, useful when output is used for reporting purposes. Pass none to leave value as-is.
@@ -411,16 +411,27 @@ def col_calculate_percent_by_group(df: _pd.DataFrame,
 
         Percent of "count" by county as percentage, returning a new dataframe
 
-        Grouping
+        Grouping on single column
 
         >>> dfres = pd.DataFrame({'county': ['Berks', 'Yorks'] * 3, 'count': [10,10,30, 42,7,1]})  # noqa
         >>> col_calculate_percent_by_group(dfres, 'perc', 'county', 'count')
         county  perc
         Berks   50
         Yorks   50
+        ...
+
+
+        Grouping on multiple columns (source dataframe not shown)
+
+        >>> col_calculate_percent_by_group(dfres, 'perc', ['county', 'country'], 'count')
+        county  country perc
+        Berks   England 50
+        Yorks   England 50
+        Mon     Wales   10
+        ...
     """
-    if group_by_col:
-        denom = df.groupby(group_by_col)[value_col].transform('sum') / (1 if as_proportion else 100)  # check this in debug
+    if group_by_cols:
+        denom = df.groupby(group_by_cols)[value_col].transform('sum') / (1 if as_proportion else 100)  # check this in debug
     else:
         denom = df[value_col].sum() / (1 if as_proportion else 100)
 
