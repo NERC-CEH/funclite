@@ -1211,8 +1211,10 @@ def file_list_generator_dfe(paths, wildcards, recurse=False):
         Fixed bug where this would yield folders.
 
     Examples:
+
         >>> for folder, filename, extension, fullname in file_list_generator_dfe('C:/temp', '*.msi', recurse=False):
         ('C:\\TEMP', 'SQL_XEVENT.MSI', '.MSI', 'C:\\TEMP\\SQL_XEVENT.MSI')
+
 
         >>> for folder, filename, extension, fullname in file_list_generator_dfe(['C:/temp', 'C:/windows'], ['.MSI', '.txt'], recurse=True):
         ('C:\\TEMP', 'SQL_XEVENT.MSI', '.MSI', 'C:\\TEMP\\SQL_XEVENT.MSI')
@@ -1291,14 +1293,19 @@ def file_from_substr(fld: str, substr: str, allow_multi_match: bool = False) -> 
         ValueError: If get more than 1 file matching substr
 
     Examples:
+        
         >>> file_from_substr('C:/temp', '12345')
         'C:/temp/my_12345_file.txt'
 
+
         Multiple matches, but not allowed
+        
         >>> file_from_substr('C:/temp', 'this_matches_loads_of_files', allow_multi_match=False)
         Traceback (most recent call last):....
 
+
         Multiple matches, allowed
+        
         >>> file_from_substr('C:/temp', 'this_matches_loads_of_files', allow_multi_match=False)
         ['C:/temp/this_matches_loads_of_files1.txt', 'C:/temp/this_matches_loads_of_files2.txt', .... ]
 
@@ -1832,6 +1839,140 @@ def files_move(from_: str, tofld: str, delete_on_exists: bool = True, showprogre
     return i
 
 
+def files_rename(root: str, match: str, replace_with: str, rename_in_place: bool = True, exts: tuple[str] = ('*.*',)):
+    """
+    Rename files using a case sensitive search/replace.
+
+    Consider using files_rename_apply for more flexibility.
+
+    Args:
+        root ():
+        match ():
+        replace_with ():
+        rename_in_place ():
+        exts: extensions to match
+
+    Returns:
+        None
+    """
+    if not rename_in_place:
+        renamed_fld = _path.normpath('%s/renamed' % root)
+        create_folder(renamed_fld)
+
+    i = sum([1 for _ in file_list_generator_dfe(root, exts, recurse=False)])
+    if i == 0:
+        print('No files match criteria. Exiting ...')
+
+    PP = PrintProgress(i)
+
+    for d, f, e, ffn in file_list_generator_dfe(root, exts, recurse=False):
+        if match in f:
+            new_file_name = f.replace(match, replace_with)
+        else:
+            PP.increment()
+            continue
+
+        if rename_in_place:
+            fnew = _path.normpath('%s/%s' % (root, new_file_name))
+            n = 0
+            while True:
+                if file_exists(fnew):
+                    n += 1
+                    d, f, e = get_file_parts(fnew)
+                    s = '%s_%s%s' % (f, n, e)
+                    fnew = fixp(d, s)
+                else:
+                    break
+
+            _os.rename(ffn, fnew)
+        else:
+            fnew_base = _path.normpath('%s/%s' % (renamed_fld, new_file_name))  # noqa
+            fnew = fnew_base
+            n = 0
+            while True:
+                if file_exists(fnew):
+                    n += 1
+                    d, f, e = get_file_parts(fnew_base)
+                    s = '%s_%s%s' % (f, n, e)
+                    fnew = fixp(renamed_fld, s)
+                else:
+                    break
+            file_copy(ffn, fnew)
+        PP.increment()
+
+
+def files_rename_apply(root: str, match: str, func, rename_in_place: bool = True, exts=('*.*',)):
+    """
+    Apply a function to each file, where the func output is the new file name.
+
+    The function is applied to the file name, including the extension.
+
+    Args:
+        root: The dir
+        match: Single string to match files on, all files must contain match (pass an empty string or None to process all files with matched extensions).
+        func: function, should accept one argument and return a string
+        rename_in_place: rename files inplace, otherwise creates a subfolder renamed in root and creates renamed files here
+        exts: Extensions to match
+
+    Returns:
+        None
+
+    Examples:
+
+        Convert file names to lower case
+        >>> files_rename_apply('C:/temp', 'TMP', lambda filename: filename.lower)
+    """
+    if not rename_in_place:
+        renamed_fld = _path.normpath('%s/renamed' % root)
+        create_folder(renamed_fld)
+
+    i = sum([1 for _ in file_list_generator_dfe(root, exts, recurse=False)])
+    if i == 0:
+        print('No files match criteria. Exiting ...')
+    PP = PrintProgress(i)
+
+    for d, f, e, ffn in file_list_generator_dfe(root, exts, recurse=False):
+        if match in f or not match:
+            try:
+                new_file_name = func(f)
+            except:
+                print('Failed to rename file %s. Skipping ...' % f)
+                PP.increment()
+                continue
+        else:
+            PP.increment()
+            continue
+
+        if rename_in_place:
+            fnew = _path.normpath('%s/%s' % (root, new_file_name))
+            n = 0
+            while True:
+                if file_exists(fnew):
+                    n += 1
+                    d, f, e = get_file_parts(fnew)
+                    s = '%s_%s%s' % (f, n, e)
+                    fnew = fixp(d, s)
+                else:
+                    break
+
+            _os.rename(ffn, fnew)
+        else:
+            fnew_base = _path.normpath('%s/%s' % (renamed_fld, new_file_name))  # noqa
+            fnew = fnew_base
+            n = 0
+            while True:
+                if file_exists(fnew):
+                    n += 1
+                    d, f, e = get_file_parts(fnew_base)
+                    s = '%s_%s%s' % (f, n, e)
+                    fnew = fixp(renamed_fld, s)
+                else:
+                    break
+
+            file_copy(ffn, fnew)
+        PP.increment()
+        
+        
 def file_move_to_fold(root: str, wildcards: any, match: str, subfold: str) -> int:
     """
     Move a file to a folder, where file has a partial match to a string and
@@ -2067,6 +2208,7 @@ def file_read_write_toggle(fname: str, set_read_only: bool):
             _os.chmod(fname, _stat.S_IREAD)
         else:
             _os.chmod(fname, _stat.S_IWRITE)
+
 
 def file_rename_date_stamped(file_name: str) -> str:
     """
