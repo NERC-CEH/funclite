@@ -2,6 +2,7 @@
 """string manipulations and related helper functions"""
 
 # base imports
+import os.path as _path
 import re as _re
 import numbers
 import random as _random
@@ -466,6 +467,78 @@ def get_between_r(s, first, last, to_end_if_no_last):
         if to_end_if_no_last:
             return s[0:end_]
         return ''
+
+
+def get_splits(s, grab: tuple, split_by: str = '_', out_sep: str = '_', exclude_extension: bool = False, filter_invalid_grab: bool = False):
+    """
+    Split a string, grab the results by index, then glue it back together with out_sep.
+
+    Args:
+        s: String to split
+        grab: Tuple (or list) if the indexes to grab back
+        split_by: The string to split the input string with
+        out_sep: The seperator to use for the grabbed substrings
+        exclude_extension: If True, the extension will be removed from the string before the split, otherwise the entire file name will be sued
+        filter_invalid_grab: If the split string "s" does not have an index matched in grab, then ignore that grab index.
+
+    Raises:
+        IndexError: If filter_invalid_grab is False, and grab contains an index greater than len(grab) - 1
+
+    Returns:
+        Grabbed string elements seperated by out_sep.
+        Returns "s" if "s" does not contain split_by
+        Returns empty string if "not grab" evaluates to True
+
+    Notes:
+        Case sensitive
+
+    Examples:
+
+        Do not exclude extension (default)
+
+        >>> get_splits('the.quick.brown.fox', (1, 2), '.', out_sep='_')
+        'quick_brown'
+
+
+        Exclude extension
+
+        >>> get_splits('the_quick_brown.fox', (1, 2), '_', out_sep='_')
+        'quick_brown.fox'
+
+
+        Invalid grab indexes, filter_invalid_grab is False
+
+        >>> get_splits('the_quick_brown.fox', (1, 10), '_', out_sep='_')
+        IndexError: string index out of range
+
+
+        Invalid grab indexes, filter_invalid_grab is True
+
+        >>> get_splits('the_quick_brown.fox', (1, 2, 10), '_', out_sep='_')
+        'quick'
+    """
+    def _get_ele(ss):
+        if max(grab) > len(ss) - 1 and filter_invalid_grab:
+            arr = list(filter(lambda x: x <= len(grab), grab))
+        else:
+            arr = [ss[i] for i in grab]
+        return arr
+
+    if split_by not in s:
+        return s
+
+    if not grab:
+        return ''
+
+    if exclude_extension:
+        # We ignore the extension, so parse it out and glue it back on at the end
+        ext = _path.splitext(s)
+        splt = ext[0].split(split_by)
+        a = _get_ele(splt)
+        return '%s%s' % (out_sep.join(a), ext[-1])
+
+    splt = s.split(split_by)
+    return out_sep.join(_get_ele(splt))
 
 
 def to_ascii(s):

@@ -34,6 +34,7 @@ import fuckit as _fuckit
 
 import funclite.stringslib as _stringslib
 from funclite.stringslib import pretty_date_now, pretty_date_time_now, pretty_date  # noqa useful for generating file names when using funcs in this module
+from funclite.stringslib import get_splits as filename_get_splits  # noqa
 
 from funclite.numericslib import round_normal as _rndnorm
 from funclite.stopwatch import StopWatch as _StopWatch
@@ -1845,6 +1846,12 @@ def files_rename(root: str, match: str, replace_with: str, rename_in_place: bool
 
     Consider using files_rename_apply for more flexibility.
 
+    Also when renaming, if a file already matches, it will rename, appending an underscored incremental count to the file name.
+
+    For example:
+        'my.jpg' is to be renamed 'your.jpg', but 'your.jpg' already exists (in root, or in root/renamed).
+        Then 'my.jpg' will be renamed to 'your_1.jpg'
+
     Args:
         root ():
         match ():
@@ -1873,12 +1880,13 @@ def files_rename(root: str, match: str, replace_with: str, rename_in_place: bool
             continue
 
         if rename_in_place:
-            fnew = _path.normpath('%s/%s' % (root, new_file_name))
+            fnew_base = _path.normpath('%s/%s' % (root, new_file_name))
+            fnew = fnew_base
             n = 0
             while True:
                 if file_exists(fnew):
                     n += 1
-                    d, f, e = get_file_parts(fnew)
+                    d, f, e = get_file_parts(fnew_base)
                     s = '%s_%s%s' % (f, n, e)
                     fnew = fixp(d, s)
                 else:
@@ -1906,6 +1914,12 @@ def files_rename_apply(root: str, match: str, func, rename_in_place: bool = True
     Apply a function to each file, where the func output is the new file name.
 
     The function is applied to the file name, including the extension.
+
+    Also when renaming, if a file already matches, it will rename, appending an underscored incremental count to the file name.
+
+    For example:
+        'my.jpg' is to be renamed 'your.jpg', but 'your.jpg' already exists (in root, or in root/renamed).
+        Then 'my.jpg' will be renamed to 'your_1.jpg'
 
     Args:
         root: The dir
@@ -1944,12 +1958,13 @@ def files_rename_apply(root: str, match: str, func, rename_in_place: bool = True
             continue
 
         if rename_in_place:
-            fnew = _path.normpath('%s/%s' % (root, new_file_name))
+            fnew_base = _path.normpath('%s/%s' % (root, new_file_name))
+            fnew = fnew_base
             n = 0
             while True:
                 if file_exists(fnew):
                     n += 1
-                    d, f, e = get_file_parts(fnew)
+                    d, f, e = get_file_parts(fnew_base)
                     s = '%s_%s%s' % (f, n, e)
                     fnew = fixp(d, s)
                 else:
