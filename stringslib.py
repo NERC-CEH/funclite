@@ -250,6 +250,7 @@ def filter_alphanumeric1(s, encoding='ascii', strict=False, allow_cr=True, allow
         str: the filtered string
 
     Examples:
+
         >>> filter_alphanumeric('asd^!2', strict=True)
         asd2
     """
@@ -409,6 +410,39 @@ def rreplace(s, match, replacewith, cnt=1):
     """(str,str,str,int)->str"""
     return replacewith.join(s.rsplit(match, cnt))
 
+
+def replace_dup(s: str, char: str, try_limit: int = 100) -> str:
+    """
+    Replace duplicate chars
+
+    Args:
+        s: string
+        char: char to remove duplicates, does work with strings > 1
+        try_limit: Limit of times to replace - a safety net
+
+    Raises:
+        RecursionError: If number of replacement attemps > try_limit
+
+    Returns:
+        The string with duplicates of string "char" removed.
+
+    Examples:
+
+        Single char
+
+        >>> replace_dup('tthis is ttttttthick', 't')
+        'this is thick'
+    """
+    n = 0
+    while True:
+        if not s: return ''
+        i = len(s)
+        s = s.replace(char*2, char)
+        if i == len(s): break
+        n += 1
+        if n > 100:
+            raise RecursionError('Recursion error when replacing duplicate string "%s" in input string "%s"' % (char, s))
+    return s
 
 def get_between(s, first, last, to_end_if_no_last=False):
     """(str, str, str) -> str
