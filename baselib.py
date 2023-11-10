@@ -271,6 +271,21 @@ class odict(_collections.OrderedDict):
 # For convieniance, and dont want to break compatibility by renaming odict
 DictOrdered = odict
 
+class DictAttributed(dict):
+    """
+    Small wrapper around dict, which exposes the dict keys as instance fields
+
+    Credit: https://stackoverflow.com/a/1639632/6494418
+
+    Examples:
+
+        >>> D = DictAttributed({"hello": 1, "world": 2, "cat": {"dog": 5}})
+        >>> print(D.cat, D.cat.dog, D.cat.items())
+        {'dog': 5}, 5, dict_items([('dog', 5)])
+    """
+    def __getattr__(self, name):
+        return self[name] if not isinstance(self[name], dict) else DictAttributed(self[name])
+
 class dictp(dict):
     """allow values to be accessed with partial key match
     dic = {'abc':1}
