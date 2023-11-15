@@ -5,6 +5,8 @@ from warnings import warn
 import os.path as _path
 from copy import deepcopy as _deepcopy
 
+import itertools as _itertools
+
 import pandas as pd
 import statsmodels.stats.api as _sms
 import pandas as _pd
@@ -722,26 +724,34 @@ def df_from_dict(d):
     return _pd.DataFrame(dict([(k, _pd.Series(list(v))) for k, v in d.items()]))
 
 
-def pandas_join_multi(dfs: list, key: str) -> _pd.DataFrame:
+def pandas_join_multi(dfs: list, key: (str, list), **kwargs) -> _pd.DataFrame:
     """
     Joins all dataframes by a _common column
 
     Args:
         dfs: list or tuple of dataframes
-        key: candidate key column
+        key: candidate key column (supports compound "keys")
+        kwargs:
 
     Returns:
         pandas.DataFrame: The joined dataframes
 
     Notes:
-        Only supports a single column and assumes all key columns are named the same
+        Assumes all key columns are named the same
 
     Examples:
-          >>> pandas_join_multi([df1, df2, df3], key='objectid')  # noqa
+
+        Single key column
+
+        >>> pandas_join_multi([df1, df2, df3], key='objectid')  # noqa
+
+        Compound key column
+
+        >>> pandas_join_multi([df1, df2, df3], key=['cola', 'colb'])  # noqa
     """
     df_first = dfs[0]
     for df in dfs[1:]:
-        df_first = pandas_join(df_first, df, from_key=key, to_key=key)
+        df_first = pandas_join(df_first, df, from_key=key, to_key=key, **kwargs)
     return df_first
 
 
@@ -764,7 +774,7 @@ def pandas_join(from_: _pd.DataFrame, to_: _pd.DataFrame, from_key: str, to_key:
     Notes:
         See https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.join.html for kwargs
     """
-    join = from_.set_index(from_key).join(to_.set_index(to_key), how=how, rsuffix=drop_wildcard, **kwargs)  # join on sq_id, left join as sanity check
+    join = from_.set_index(from_key).join(to_.set_index(to_key), how=how, rsuffix=drop_wildcard, **kwargs)
     if drop_wildcard:
         join.drop(list(join.filter(regex=drop_wildcard)), axis=1, inplace=True)  # drop duplicate cols
     join = join.reset_index()
@@ -838,6 +848,39 @@ def df_to_dict_as_records_flatten1(df: _pd.DataFrame, cols: (list[str], None) = 
     if cols:
         return df_to_dict_as_records_flatten(df[[cols[0], cols[1]]].to_dict(orient='records'))
     return df_to_dict_as_records_flatten(df[[df.columns[0], df.columns[1]]].to_dict(orient='records'))
+
+
+def df_tally_df(cols: (list[str], tuple[str]), *args):
+    """
+    This gets a full tally dataframe.
+
+    That is, it performs a product (itertools.product) operation on the input arg iterables to get all value combinations.
+
+    From that, a dataframe is made with len(args) columns, with every combination of the values in args
+    across the table.
+
+    This is a familiar concept in databases. Tally tables are used to join related datasets on the tally table to ensure
+    that all possible values have a record that is not otherwise ommited when joining.
+
+    Args:
+        cols: iterable of column names
+        *args: list or tuples of columunar data
+
+    Returns:
+        _pd.DataFrame
+
+    Examples:
+
+        >>> df_tally_df(('a', 'b', 'c'), [1,2], ['b','bb'], [1.1, 2.2])
+        a       b       c
+        'a'     1       1.1
+        'a'     1       2.2
+        'a'     2       1.1
+        'a'     2       2.2
+        'b'     ...     ...
+    """
+    df = _pd.DataFrame()
+    return _pd.DataFrame(_itertools.product(*args), columns=cols).reset_index()
 
 
 def dfs_to_excel(dfs: list[pd.DataFrame], save_to: str, sheet_names: (None, list[str]) = None, overwrite: bool = True, show_progress: bool = False, **kwargs) -> None:
