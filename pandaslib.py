@@ -23,6 +23,7 @@ from sklearn.metrics import mean_squared_error as _mean_squared_error
 from funclite.iolib import PrintProgress as _PrintProgress
 import funclite.iolib as _iolib
 from funclite.to_precision import std_notation as _std_notation
+import funclite.stringslib as _stringslib
 from dblib import mssql
 import funclite.statslib as _statslib
 
@@ -77,6 +78,61 @@ class MoveColumn:
         col1 = df.pop(col)
         df.insert(loc=n - 1, column=col, value=col1)
         return df
+
+
+class IntervalHelper:
+    """
+    Functions to do with Intervals
+
+    Methods:
+        interval_get: Get the text for the interval for the value v, or get the Interval itself
+
+    Notes:
+        max_ is included in the intervals (unlike the range built-in)
+
+    """
+    def __init__(self, min_, max_, step):
+        self._min = min_
+        self._max = max_
+        self._step = step
+        self._IntervalIndex = _pd.IntervalIndex.from_breaks(range(min_, max_+1, step))
+
+
+    def interval_get(self, v: (int, float), as_text: bool = True, is_not_in_interval='na'):
+        """
+        Get the interval as text
+
+        Args:
+            v: value to test
+            as_text: get the interval as text, otherwise get as a pandas.Interval
+            is_not_in_interval: return this value if v is not in the class interval
+
+        Returns:
+            str: Interval as a string, suitable for writing to tables
+            pandas.Interval: Get as a pandas.Interval object
+            None: If v not in the intervals definied in the init
+
+        Notes:
+            If as_text is False, then we return the Cut object, irrespective of is_not_in_internal
+
+        Examples:
+
+            Value not in the defined Intervals
+
+            >>> IntervalHelper().interval_get(-1)
+            'na'
+
+            Value is in the Intervals
+
+            >>> IntervalHelper().interval_get(12)
+            '0 - 25'
+        """
+        out = None
+        Cut = _pd.cut([v], self._IntervalIndex)[0]
+        if as_text:
+            if not _pd.notna(Cut): return is_not_in_interval
+            return _stringslib.filter_alphanumeric1(str(Cut), strict=True)
+        return Cut
 
 
 class GroupBy:

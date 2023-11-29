@@ -2,6 +2,7 @@
 """string manipulations and related helper functions"""
 
 # base imports
+from abc import ABC as _ABC
 import os.path as _path
 import re as _re
 import numbers
@@ -22,6 +23,35 @@ ascii_punctuation = ['!', '"', '#', '$', '%', '&', '(', ')', '*', '+', ',', '-',
 ascii_punctuation_strict = ['!', '"', '(', ')', ',', '-', '.', ':', ';', '?', "'"]
 ascii_and = ['&', '+']
 ascii_or = ['|']
+
+class Characters(_ABC):
+    """ Special utf-8 characters, commonly used in math and written language
+    """
+    class Language(_ABC):
+        copyright = '©'
+        emdash = '—'
+        endash = '–'
+        non_breaking_space = '\xc2\xa0'
+        registered_trademark = '®'
+        superscript_1 = '¹'
+        superscript_2 = '²'
+        superscript_3 = '³'
+    
+    class NonPrinting(_ABC):
+        cr = '\x0C'
+        lf = '\n'
+        crlf = cr + lf
+        tab = '\t'
+    
+    class Math(_ABC):
+        degree = '°'
+        division_sign = '÷'
+        approx_double_bar = '≈'
+        fraction_half = '½'
+        fraction_three_quarters = '¾'
+        fration_quarter = '¼'
+        plus_minus = '±'
+        product_dot = '·'
 
 
 def encode_b64(s: str, on_if_not: str = '') -> str:
