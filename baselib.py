@@ -785,13 +785,19 @@ def list_get_dups(lst: list, thresh: int = 2, value_list_only: bool = False) -> 
         dict: If value_list_only is False. Keys are the duplicate values, values are the count of duplicates. Returns empty dict of no duplicates.
 
     Examples:
+
         Default behaviour, all duplicates\n
+
         >>> list_get_dups([1,1,2,3,4,4,4])
         {1:2, 4:3}
-        \nOnly count duplicates with 3 or more occurences
+
+        Only count duplicates with 3 or more occurences
+
         >>> list_get_dups([1,2,3,4,4], thresh=3)
         {}
-        \nUnique list of the values with duplicates
+
+        Unique list of the values with duplicates
+
         >>> list_get_dups([1, 1, 2, 3, 4, 4, 4, 5, 5, 5], thresh=3, value_list_only=True)
         [4, 5]
     """
