@@ -98,13 +98,16 @@ class IntervalHelper:
         self._IntervalIndex = _pd.IntervalIndex.from_breaks(range(min_, max_+1, step))
 
 
-    def interval_get(self, v: (int, float), as_text: bool = True, is_not_in_interval='na'):
+    def interval_get(self, v: (int, float), as_text: bool = True, sep: str = _stringslib.Characters.Language.emdash, as_mid: bool = False, mid_fmt_func=int, is_not_in_interval='na'):
         """
         Get the interval as text
 
         Args:
             v: value to test
             as_text: get the interval as text, otherwise get as a pandas.Interval
+            sep: seperator for intervals.
+            as_mid: Get as midpoint (ignores sep)
+            mid_fmt_func: Apply this func to format the mid value str, ignored if as_mid is False
             is_not_in_interval: return this value if v is not in the class interval
 
         Returns:
@@ -131,7 +134,8 @@ class IntervalHelper:
         Cut = _pd.cut([v], self._IntervalIndex)[0]
         if as_text:
             if not _pd.notna(Cut): return is_not_in_interval
-            return _stringslib.filter_alphanumeric1(str(Cut), strict=True)
+            if as_mid: return str(mid_fmt_func(Cut.mid))
+            return _stringslib.filter_alphanumeric1(str(Cut), strict=True).replace(' ', sep)
         return Cut
 
 
