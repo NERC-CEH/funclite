@@ -2236,14 +2236,33 @@ def file_rename_date_stamped(file_name: str) -> str:
         str: The name of the renamed file, or empty string if file_name did not exist
 
     Notes:
-        Failes if the renamed filename already exists
+        If the renamed filename already exists, add a 3 letter length random suffix to the filename
+
+    Examples:
+
+        All good
+
+        >>> file_rename_date_stamped('c:/myfile.txt')
+        'C:/myfile_2022-10-01.txt'
+
+
+        The proposed renamed file name already exists
+
+        >>> file_rename_date_stamped('c:/myfile.txt')
+        'C:/myfile_2022-10-01_3dP.txt'
     """
     s = _path.normpath(file_name)
     if file_exists(s):
         d, f, e = get_file_parts(s)
         bn = '%s_%s.%s' % (f, pretty_date_now(), e)
         fname = fix(d, bn)
-        _os.rename(s, fname)
+        try:
+            _os.rename(s, fname)
+        except:
+            d, f, e = get_file_parts(s)
+            bn = '%s_%s%s.%s' % (f, pretty_date_now(), '_%s' % _stringslib.rndstr(3), e)
+            fname = fix(d, bn)
+            _os.rename(s, fname)
         return fname
     return ''
 
