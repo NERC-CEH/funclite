@@ -1113,24 +1113,30 @@ def list_not(lst: list, not_in_list: list) -> (list, None):
 
     Returns:
         list: A list or none if lst and not_in_list are empty
-        None: if lst is empty
+        None: if lst and not_in_list are both None
 
     Examples:
+
         >>> list_not([1,2,3,4,5,6], [5,6,7,8])
         [1,2,3,4]
+
         >>> list_not([1,2], [])
         [1,2]
+
         >>> list_not(None, None)  # noqa
         None
     """
-    if not lst and not not_in_list:
+    if lst is None and not_in_list is None:
         return None  # noqa
+
+    if not lst and not not_in_list:
+        return []  # noqa
 
     if not not_in_list:
         return list(set(lst))  # noqa
 
     if not lst:
-        return None  # noqa
+        return []  # noqa
 
     return list(set(lst) - set(not_in_list))  # noqa
 
