@@ -152,6 +152,7 @@ class GroupBy:
         df: pandas dataframe
         groupflds: iterable list of fields to aggregate by
         valuefls: list of value fields with the data to summarise
+        drop_na_in_groupby: Passed to dataframe.groupby - control if na's in the groupby fields are dropped (default) or retained
         *funcs: list of aggregate functions
         **kwargs: Accepts flatten (bool) and col_names_out (tuple,iter) for flattening and renaming the outputed dataframe respectively. col_names_out simply matches by index.
 
@@ -180,7 +181,7 @@ class GroupBy:
 
     numpy = np  # for convienance to easily specify aggregate funcs
 
-    def __init__(self, df, groupflds, valueflds, *funcs, **kwargs):
+    def __init__(self, df, groupflds, valueflds, *funcs, drop_na_in_groupby: bool = True, **kwargs):
         self.df = df
 
         if isinstance(groupflds, str): groupflds = [groupflds]
@@ -188,6 +189,7 @@ class GroupBy:
         self._groupflds = groupflds
         self._valueflds = valueflds
 
+        self._drop_na_in_groupby = drop_na_in_groupby
         self._flatten = kwargs.get('flatten')
         self._col_names_out = kwargs.get('col_names_out')
 
@@ -210,7 +212,7 @@ class GroupBy:
         for v in self._valueflds:
             d[v] = self._funcs
 
-        self.result = self.df.groupby(self._groupflds).agg(d)
+        self.result = self.df.groupby(self._groupflds, dropna=self._drop_na_in_groupby).agg(d)
         if self._flatten or self._col_names_out:  # col_names_out needs a flattened result
             # self.result.reset_index(inplace=True)
             self.result.columns = self.result.columns.to_flat_index().str.join('_')
