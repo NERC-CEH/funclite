@@ -2,6 +2,8 @@
 
 Outlook must be installed and configured for the currently logged in
 account under which python is executing.
+
+TODO: Update this with functionality added in erammp.emails
 """
 
 # Had to rename from email.py because of name clashes
@@ -147,7 +149,7 @@ class Email:
             from win32com import client
             app = client.gencache.EnsureDispatch('outlook.application')
         except AttributeError:
-            # Corner case dependencies.
+            # Edge case dependencies.
             import os
             import re
             import sys
