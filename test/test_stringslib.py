@@ -33,7 +33,7 @@ class Test(unittest.TestCase):
         s = '\n12.23'
         out = stringslib.numbers_in_str(s)
         s = 'aas 12.23 sdf 12 sf 1'
-        out = stringslib.numbers_in_str2(s, int)
+        out = stringslib.numbers_in_str(s, int)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
