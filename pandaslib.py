@@ -1130,9 +1130,9 @@ def excel_table_as_df(workbook: str, worksheet: (str, int), table: (str, int)) -
     """
     workbook = _path.normpath(workbook)
 
-    with _xlwings.App() as App:
+    with _xlwings.App(visible=False) as App:
         _ = App.books.open(workbook)
-        rng = App.books[workbook].sheets[worksheet].tables[table].range
+        rng = App.books[_path.basename(workbook)].sheets[worksheet].tables[table].range
         df: _pd.DataFrame = rng.expand().options(_pd.DataFrame).value
         df.reset_index(inplace=True)
     return df
