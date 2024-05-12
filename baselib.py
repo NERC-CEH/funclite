@@ -150,6 +150,7 @@ class TimeDelta(_timedelta):
         as_mins: Time diff in mins
         as_hours: Time diff in hours
         as_seconds: Time diff in seconds
+        TimeDelta: Create an instance from a timedelta instance
 
     Notes:
         If timedelta is provided, all other arguments are ignored at initialisation.
