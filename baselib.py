@@ -859,6 +859,21 @@ def list_most_common(L, force_to_string=False):
     return max(groups, key=_auxfun)[0]
 
 
+def list_batch(lst: list, batch_sz: int) -> list:
+    """
+    Yields sublists from list of length "batch_sz"
+
+    Args:
+        lst: list to batch
+        batch_sz: sublist length
+
+    Yields:
+        lists of size "batch_sz", except ofcourse for (potentially) the first or last
+    """
+    for i in range(0, len(lst), batch_sz):
+        yield lst[i:i + batch_sz]
+
+
 def lists_match(a: list, b: list, ignore_case: bool = False) -> bool:
     """
     Check if the contents of two list match.

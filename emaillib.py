@@ -12,7 +12,7 @@ import time as _time
 
 import funclite.stringslib as _stringslib
 import funclite.errors as _errors
-
+import funclite.iolib as _iolib
 
 class EmailJobStatus:
     """
@@ -138,10 +138,16 @@ class Email:
         self.body = body
         self._outlook = None
         self.attachments = []
+
+        def _filt(s: str):
+            if not s: return False
+            s = _path.normpath(s)
+            return _iolib.file_exists(s)
+
         if attachments:
             if isinstance(attachments, str):
                 attachments = [attachments]
-            self.attachments = list(map(_path.normpath, attachments))
+            self.attachments = list(map(_filt, attachments))
         self._setapp()
 
     def _setapp(self):
