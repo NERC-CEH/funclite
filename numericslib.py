@@ -1,6 +1,6 @@
 """basic number related helper functions"""
 import math as _math
-
+from copy import deepcopy as _deepcopy
 
 def is_int(s: any) -> bool:
     """
@@ -138,3 +138,50 @@ def is_numeric(v: any) -> bool:
         True
     """
     return is_int(v) and is_float(v)
+
+
+
+def as_int_float_or_string(v) -> (str, float, int, None):
+    """
+    Given how a value evaluates, force
+    to a float, int or string.
+
+    Returns None, if cant be forced to any of these.
+
+    Copes with strings that evaluate to ints or floats.
+
+    Examples:
+
+        float as a float, get a float
+
+        >>> as_int_float_or_string(1.23)
+        1.23
+
+
+
+        int as a float, get an int
+
+        >>> as_int_float_or_string(1.0)
+        1
+
+
+
+        Float as a string, get a float
+
+        >>> as_int_float_or_string("1.23")
+        1.23
+
+
+        String input
+
+        >>> as_int_float_or_string("string")
+        'string'
+
+
+    """
+    if is_float(v, int_is_float=False): return float(v)
+    if is_int(v): return int(v)
+    try:
+        return str(v)
+    except:
+        return None

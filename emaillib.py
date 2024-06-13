@@ -147,7 +147,7 @@ class Email:
         if attachments:
             if isinstance(attachments, str):
                 attachments = [attachments]
-            self.attachments = list(map(_filt, attachments))
+            self.attachments = list(filter(_filt, attachments))
         self._setapp()
 
     def _setapp(self):
