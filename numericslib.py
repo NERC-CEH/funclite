@@ -1,6 +1,5 @@
 """basic number related helper functions"""
 import math as _math
-from copy import deepcopy as _deepcopy
 
 def is_int(s: any) -> bool:
     """
