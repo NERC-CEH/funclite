@@ -314,6 +314,7 @@ class GroupBy:
         def CI_str_(data):
             l, _ = _sms.DescrStatsW(data).tconfint_mean((100 - interval) * 0.01)
             m = np.mean(data)
+            u = m - abs(l) + m
             s = 'M=%s %s%% CIs [%s, %s]' % (_std_notation(m, GroupBy.PRECISION), interval, _std_notation(l, GroupBy.PRECISION), _std_notation(u, GroupBy.PRECISION))  # noqa
             # return m, m-h, m+h
             return s
