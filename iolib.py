@@ -85,7 +85,7 @@ class CSVIo:
         if not filepath:
             filepath = self.filepath
         with open(filepath, 'w', encoding='utf-8') as f:
-            writer = _csv.DictWriter(f, self.rows[0].keys())
+            writer = _csv.DictWriter(f, self.rows[0].keys())  # noqa
             writer.writeheader()
             for row in self.rows:
                 writer.writerow(row)
@@ -805,6 +805,7 @@ def get_file_parts2(filepath: str) -> list:
         list: [folder, file name with extension, dotted extension]
 
     Examples:
+
         >>> get_file_parts2('c:/temp/myfile.txt')
         'c:/temp', 'myfile.txt', '.txt'
     """
@@ -813,23 +814,29 @@ def get_file_parts2(filepath: str) -> list:
     return [folder, fname, ext]
 
 
-def folder_has_files(fld, ext_dotted=()):
+def folder_has_files(fld: str, ext_dotted: tuple[str] = ()) -> bool:
     """(str, str|list) -> bool
     Does the folder contain files, optionally matching
     extensions. Extensions are dotted.
 
-    Returns false if the folder does not exist.
+    This checks in subfolders. So even if fld has no files, True will be returned if any subdir has files
 
-    fld:
-        folder path
-    ext_dotted:
-        list of extensions to match
-    Example:
-    >>>folder_has_files('C:/windows')
+    fld: folder path
+    ext_dotted: list of extensions to match
+
+    Returns:
+        False if the folder does not exist, else True.
+
+    Examples:
+
+    >>> folder_has_files('C:/windows')
     True
 
-    >>>folder_has_files('C:/windows', ['.dll'])
-    >>>True
+
+    specify file extensions
+
+    >>> folder_has_files('C:/windows', ['.dll'])
+    True
     """
     if isinstance(ext_dotted, str):
         ext_dotted = [ext_dotted]
@@ -2160,7 +2167,7 @@ def fixp(*args) -> str:
     """
     s = ''
     for u in args:
-        s = _path.join(s, u)
+        s = _path.join(s, u)  # noqa
     return _path.normpath(s)
 
 
@@ -2419,6 +2426,42 @@ def folder_delete(fld: str):
         _shutil.rmtree(fld, ignore_errors=True)
 
 
+def folders_delete_empty(root: str, recursive: bool = False) -> list[str]:
+    """
+    Delete empty folders in root
+
+    Args:
+        root:  The root folder
+        recursive: recurse through subfolders
+
+    Returns:
+        list of folders which were deleted
+    """
+    deleted = set()
+    root = _path.normpath(root)
+
+    if recursive:
+        for current_dir, subdirs, files in _os.walk(root, topdown=False):
+            still_has_subdirs = False
+            for subdir in subdirs:
+                if _os.path.join(current_dir, subdir) not in deleted:
+                    still_has_subdirs = True
+                    break
+
+            if not any(files) and not still_has_subdirs:
+                _os.rmdir(current_dir)
+                deleted.add(current_dir)
+    else:
+        for current_dir, subdirs, files in _os.walk(root, topdown=True):
+            for subdir in subdirs:
+                pth = _path.join(current_dir, subdir)
+                if not folder_has_files(pth):
+                    _os.rmdir(pth)
+                    deleted.add(pth)
+            break
+
+    return sorted(list(deleted))
+
 # endregion
 
 
@@ -2671,7 +2714,7 @@ def pickle(obj: any, fname: str) -> None:
     d, _, _ = get_file_parts2(fname)
     create_folder(d)
     with open(fname, 'wb') as f:
-        _pickle.dump(obj, f)
+        _pickle.dump(obj, f)  # noqa
 
 
 # this is also in baselib
@@ -2705,4 +2748,5 @@ class Info:
 if __name__ == '__main__':
     # Quick debugging here
     # file_count(r'\\nerctbctdb\shared\shared\PROJECTS\WG ERAMMP2 (06810)\2 Field Survey\Data Management\submission\2 images\freshwater\features', wildcards='*', directory_match='2021', recurse=True)
+    out_main = folders_delete_empty(r'C:\TEMP\delete_empty_test', recursive=False)
     pass
