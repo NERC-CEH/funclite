@@ -1557,8 +1557,9 @@ def exception_to_str(e: Exception) -> (str, None):
         None: If e was not a Exception instance
     """
     if isinstance(e, Exception):
-        return '\n'.join(_traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
+        return '\n'.join(_traceback.format_exception(type(e), value=e, tb=e.__traceback__))
 # endregion exceptions
+
 
 if __name__ == "__main__":
     out__ = list_get_dups([1, 1, 2, 3, 4, 4, 4], 3)
