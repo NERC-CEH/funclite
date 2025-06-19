@@ -2402,6 +2402,9 @@ def folder_exists(folder_name: str) -> bool:
 def create_folder(folder_name):
     """(str) -> void
     creates a folder
+
+    Note in windows that a  folder and a file cannot share the same name.
+    path_exists returns True for a file or a folder, which is correct behaviour.
     """
     folder_name = _path.normpath(folder_name)
     if not _path.exists(folder_name):
