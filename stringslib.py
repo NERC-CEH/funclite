@@ -268,7 +268,7 @@ def filter_alphanumeric1(s, encoding='ascii', strict=False, allow_cr=True, allow
         allow_cr: include or exclude CR
         allow_lf: include or exclude LF
         exclude (tuple): force exclusion of these chars
-        include (tuple): force exclusion of these chars
+        include (tuple): force inclusion of these chars
         replace_ampersand: replace "&" with the argument
         remove_single_quote: remove single quote from passed string
         remove_double_quote: remove double quote from passed string
@@ -313,6 +313,24 @@ def filter_alphanumeric1(s, encoding='ascii', strict=False, allow_cr=True, allow
         out = out.lstrip().rstrip()
     return out
 
+def duplicate_char_remove(s:str, char: str = ' ') -> str:
+    """ clean duplicate chars from s
+
+    Args:
+        s: string to clean
+        char: duplicate char to remove
+
+    Returns:
+        Cleaned string, or s if not s, e.g. None if s is None
+
+    Examples:
+        >>> duplicate_char_remove('asd!!  !!sadf', char='!')
+        'asd^!2  !sadf'
+    """
+    if not s: return s
+    while [char] * 2 in s:
+        s = s.replace([char] * 2, char)
+    return s
 
 def filter_numeric1(s, encoding='ascii', is_numeric=('.',)):
     """(str, str) -> str
@@ -373,7 +391,7 @@ def filter_alphanumeric(char, strict=False, allow_cr=True, allow_lf=True, exclud
         include or exclude cr lf
 
     exclude,include : tuple(str,..)
-        force true or false for passed chars
+        force true or false for passed chars. Include means we KEEP the char.
 
     Example:
     l = lambda x: _filter_alphanumeric(x, strict=True)
