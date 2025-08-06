@@ -492,6 +492,30 @@ def replace_dup(s: str, char: str, try_limit: int = 100) -> str:
             raise RecursionError('Recursion error when replacing duplicate string "%s" in input string "%s"' % (char, s))
     return s
 
+def get_first_alpha_index(s: str) -> (int, None):
+    """
+    Get the index of the first alpha character, i.e. a-Z
+
+    Args:
+        s: the string
+
+    Returns:
+        The index of the first alphanumeric character
+        Returns None if not found
+
+    Examples:
+        >>> get_first_alpha_index('123abcd')
+        3
+
+        >>> get_first_alpha_index('123')
+        None
+    """
+    for i, ss in enumerate(s):
+        if ss.isalpha():
+            return i
+    return None
+
+
 def get_between(s, first, last, to_end_if_no_last=False):
     """(str, str, str) -> str
     Gets text between first and last, searching from the left

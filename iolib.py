@@ -940,6 +940,7 @@ def folder_copy(src: str, dest: str, ignore: (list, tuple) = (), raise_error: bo
 def folder_generator(paths: (str, list)):
     """
     Yield subfolders in paths with wildcard match on any in match.
+    Recurses through all subfolders
 
     Args:
         paths (str, list): Paths to iterate
@@ -948,9 +949,9 @@ def folder_generator(paths: (str, list)):
         str: subfolders in paths
 
     Notes:
-        Also see folder_generator2 which supports wildcard matching
-    Examples:
+        Also see folder_generator2 which supports wildcard matching and can be set to not recurse
 
+    Examples:
         >>> [s for s in folder_generator2('C:/temp', 'folder')]  # noqa
         ['C:/temp/folder_for_me', 'C:/temp/folder_for_you']
     """
@@ -965,7 +966,7 @@ def folder_generator(paths: (str, list)):
             yield fld
 
 
-def folder_generator2(paths: (str, list), match: (str, list) = (), ignore_case: bool = True) -> str:
+def folder_generator2(paths: (str, list), match: (str, list) = (), ignore_case: bool = True, recurse: bool=True) -> str:
     """
     Yield subfolders in paths with wildcard match on any in match.
 
@@ -973,6 +974,7 @@ def folder_generator2(paths: (str, list), match: (str, list) = (), ignore_case: 
         paths (str, list): Paths to iterate
         match (str, list): Wildcard match on this. If empty or None, no filter is applied (i.e. every dir is yielded)
         ignore_case (bool): Make match case insensitive
+        recurse (bool): Recurse into subfolders of root subfolders
 
     Yields:
         str: subfolders in paths
@@ -988,13 +990,19 @@ def folder_generator2(paths: (str, list), match: (str, list) = (), ignore_case: 
         match = [match]
 
     paths = [_path.normpath(p) for p in paths]
-    for pth in paths:
-        for fld, _, _ in _os.walk(pth):
-            if fld in paths:
-                continue
-            if _stringslib.iter_member_in_str(fld, list(map(str, match)), ignore_case):
-                yield fld
-
+    if recurse:
+        for pth in paths:
+            for fld, _, _ in _os.walk(pth):
+                if fld in paths:
+                    continue
+                if _stringslib.iter_member_in_str(fld, list(map(str, match)), ignore_case):
+                    yield fld
+    else:
+        for pth in paths:
+            for item in _os.listdir(pth):
+                if _os.path.isdir(path.join(pth, item)):
+                    if _stringslib.iter_member_in_str(item, list(map(str, match)), ignore_case):
+                        yield path.join(pth, item)
 
 def file_list_generator(paths: (str, list, tuple), wildcards: (str, list, tuple)):
     """
