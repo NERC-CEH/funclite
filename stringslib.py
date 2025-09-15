@@ -893,7 +893,7 @@ def numbers_in_str(s: str, type_=int, allow_scientific_notation: bool = False, e
         if allow_scientific_notation:
             if type_ is int: type_ = lambda i: int(float(i))  # little work around to support scientific notation and int as int('1.11') fails
             return [type_(ss.strip('.')) for ss in rr]
-        return [type_(ss.strip('.')) for ss in rr if 'e' not in ss.lower()]
+        return [type_(ss.replace(',', '').strip('.')) for ss in rr if 'e' not in ss.lower()]
     return []
 
 
